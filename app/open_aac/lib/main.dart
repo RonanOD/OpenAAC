@@ -31,7 +31,7 @@ class AppState extends ChangeNotifier {
 }
 
 class HomePage extends StatefulWidget {
-  HomePage({Key? key, required this.title}) : super(key: key);
+  HomePage({super.key, required this.title});
 
   final String title;
 

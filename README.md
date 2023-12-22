@@ -7,9 +7,8 @@ The OpenAAC app will use Generative AI generate and the symbols from the [Open S
 ## Speak4Yourself
 Free download of the Speak4Yourself AAC symbols here: https://smartysymbols.com/download/free-speak-for-yourself-printable/
 
-## Flutter Vector DB
- * https://objectbox.io/flutter-databases-sqflite-hive-objectbox-and-moor/
- * https://github.com/objectbox/objectbox-dart
- * https://objectbox.io/vector-database-flutter/ 
- * https://pub.dev/packages/sqflite
- * https://python.langchain.com/docs/integrations/vectorstores/sqlitevss#quickstart
+### Pinecone Vector DB
+ * https://pub.dev/packages/pinecone
+
+### Langchain
+ * https://pub.dev/packages/langchain

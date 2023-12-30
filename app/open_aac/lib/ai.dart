@@ -1,18 +1,14 @@
 import 'dart:io' show Platform;
 import 'package:langchain_openai/langchain_openai.dart' show OpenAIEmbeddings;
 import 'package:pinecone/pinecone.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 const String modelName = 'text-embedding-ada-002';
 const String pcIndex   = 'openaac-embeddings';
 const String namespace = 'openaac-images';
 
 // Config Map
-var config = {
-  'openAIApiKey':      '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', //Platform.environment['OPENAI_API_KEY'],
-  'pineconeApiKey':    '7eb7e24b-ce47-4d2d-9736-0b89e47d6c9a', //Platform.environment['PINECONE_API_KEY'],
-  'pineconeEnv':       'us-east1-gcp', //Platform.environment['PINECONE_ENV'],
-  'pineconeProjectID': '174c7d0', //Platform.environment['PINECONE_PROJECT_ID'],
-};
+var config = { };
 
 class Mapping {
   final String word;
@@ -24,7 +20,7 @@ class Mapping {
 // Perform a lookup on the current text using the AI engine
 Future<List<Mapping>> lookup(String text) async {
   List<Mapping> mappings = [];
-  if (!text!.isEmpty && checkConfig()) {
+  if (!text!.isEmpty && await checkConfig()) {
     // Create Pinecone client
     PineconeClient pcClient = PineconeClient(
       apiKey: config['pineconeApiKey']!,
@@ -64,8 +60,15 @@ Future<List<Mapping>> lookup(String text) async {
 }
 
 // Check the config map for the required keys
-bool checkConfig() {
-  // Get OPENAI_API_KEY from environment variable: https://help.openai.com/en/articles/4936850-where-do-i-find-my-api-key
+Future<bool> checkConfig() async {
+  if (config.isEmpty) {
+    // Load config from shared preferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    config['openAIApiKey']      = prefs.getString('openAIKey');
+    config['pineconeApiKey']    = prefs.getString('pineconeKey');
+    config['pineconeEnv']       = prefs.getString('pineconeEnv');
+    config['pineconeProjectID'] = prefs.getString('pineconeProjectID');
+  }
   if (config['openAIApiKey'] == null) {
     print('OPENAI_API_KEY environment variable not set');
     return false;

@@ -51,3 +51,15 @@ Pinecone and OpenAI. Run the following command to upload the images:
 ```bash
 dart bin/cli.dart --path=images
 ```
+
+## Test
+To test the embeddings, you can use the `test.dart` script as follows:
+
+```bash
+dart bin/test.dart -t
+```
+
+This will split your query into words and search for the embeddings of each word. It will then return the top result for each word.
+
+### TODO
+ - Use an LLM to searc for the embeddings as described in [this article](https://docs.pinecone.io/docs/langchain#creating-a-vector-store-and-querying) 

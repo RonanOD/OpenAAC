@@ -41,22 +41,26 @@ void runTextTest() async {
       return;
     } else {
       print("text to lookup: $text");
+      // Split the text into a list of words
+      List<String> words = text.split(' ');
+      for (var word in words) {
+        var embedding = await openAIEmbeddings.embedQuery(word);
 
-      var embedding = await openAIEmbeddings.embedQuery(text);
+        var response =  await pcClient.queryVectors(
+          environment: config['pineconeEnv']!,
+          projectId: config['pineconeProjectID']!,
+          indexName: pcIndex,
+          request: QueryRequest(
+            includeMetadata: true,
+            namespace: namespace,
+            vector: embedding,
+            topK: 1,
+            includeValues: false,
+          ),
+        );
 
-      var response =  await pcClient.queryVectors(
-        environment: config['pineconeEnv']!,
-        projectId: config['pineconeProjectID']!,
-        indexName: pcIndex,
-        request: QueryRequest(
-          includeMetadata: true,
-          namespace: namespace,
-          vector: embedding,
-          topK: 2,
-        ),
-      );
-
-      print("moving on ${response.matches}");
+        print("word $word => $response");
+      }
     }
   }
 }

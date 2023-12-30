@@ -22,7 +22,7 @@ void runTextTest() async {
     return;
   }
 
-    // Create Pinecone client
+  // Create Pinecone client
   PineconeClient pcClient = PineconeClient(
     apiKey: config['pineconeApiKey']!,
   );

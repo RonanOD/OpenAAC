@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'ai.dart' as ai;
 
 void main() {
   runApp(OpenAAC());
@@ -23,10 +24,13 @@ class OpenAAC extends StatelessWidget {
 }
 
 class AppState extends ChangeNotifier {
+  List<ai.Mapping> mappings = [];
 
   void checkText(var text) {
-    print("XXX " + text);
-    notifyListeners();
+    ai.lookup(text).then((mappings) {
+      this.mappings = mappings;
+      notifyListeners();
+    });
   }
 }
 
@@ -49,6 +53,18 @@ class _HomePageState extends State<HomePage> {
     // Clean up the controller when the widget is disposed.
     textController.dispose();
     super.dispose();
+  }
+
+  int getImageCount() {
+    return context.read<AppState>().mappings.length;
+  }
+
+  List<Image> getImages() {
+    List<Image> images = [];
+    for (var mapping in context.read<AppState>().mappings) {
+      images.add(Image.asset("assets/${mapping.imagePath}"));
+    }
+    return images;
   }
 
   @override
@@ -97,11 +113,9 @@ class _HomePageState extends State<HomePage> {
                 crossAxisCount: 4, // Adjust number of items in a row
                 childAspectRatio: 1, // Adjust aspect ratio
               ),
-              itemCount: 20, // Adjust number of items
+              itemCount: getImageCount() , // Adjust number of items
               itemBuilder: (context, index) {
-                return Image.network(
-                  'https://via.placeholder.com/64', // Replace with your image source
-                );
+                return getImages()[index]; // Adjust index
               },
             ),
           ),

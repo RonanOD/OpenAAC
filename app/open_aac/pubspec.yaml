@@ -36,6 +36,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   provider: ^6.1.1
+  langchain_openai: ^0.3.1
+  pinecone: ^0.7.2
 
 dev_dependencies:
   flutter_test:
@@ -63,6 +65,91 @@ flutter:
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/A/
+    - assets/images/At/
+    - assets/images/But/
+    - assets/images/Computer/
+    - assets/images/Every/
+    - assets/images/Get/
+    - assets/images/Hear/
+    - assets/images/Know/
+    - assets/images/Look/
+    - assets/images/New/
+    - assets/images/Play/
+    - assets/images/Right/
+    - assets/images/Some/
+    - assets/images/That/
+    - assets/images/Time/
+    - assets/images/Walk/
+    - assets/images/Will/
+    - assets/images/Any/
+    - assets/images/Away/
+    - assets/images/Buy/
+    - assets/images/Do/
+    - assets/images/Family/
+    - assets/images/Give/
+    - assets/images/Help/
+    - assets/images/Later/
+    - assets/images/Make/
+    - assets/images/Not/
+    - assets/images/Please/
+    - assets/images/Said/
+    - assets/images/Stop/
+    - assets/images/Then/
+    - assets/images/To/
+    - assets/images/Want/
+    - assets/images/With/
+    - assets/images/Are/
+    - assets/images/Be/
+    - assets/images/Can/
+    - assets/images/Down/
+    - assets/images/Feel/
+    - assets/images/Go/
+    - assets/images/Home/
+    - assets/images/Let/
+    - assets/images/Me/
+    - assets/images/Okay/
+    - assets/images/Put/
+    - assets/images/Sit/
+    - assets/images/Take/
+    - assets/images/Thing/
+    - assets/images/Try/
+    - assets/images/Wear/
+    - assets/images/Work/
+    - assets/images/As/
+    - assets/images/Because/
+    - assets/images/Colour/
+    - assets/images/Drink/
+    - assets/images/Find/
+    - assets/images/Good/
+    - assets/images/In/
+    - assets/images/Like/
+    - assets/images/Much/
+    - assets/images/Or/
+    - assets/images/Read/
+    - assets/images/Sleep/
+    - assets/images/Talk/
+    - assets/images/Think/
+    - assets/images/Turn/
+    - assets/images/What/
+    - assets/images/Would/
+    - assets/images/Ask/
+    - assets/images/Big/
+    - assets/images/Come/
+    - assets/images/Eat/
+    - assets/images/Friend/
+    - assets/images/Have/
+    - assets/images/Is/
+    - assets/images/Little/
+    - assets/images/Need/
+    - assets/images/Out/
+    - assets/images/Ride/
+    - assets/images/So/
+    - assets/images/Tell/
+    - assets/images/This/
+    - assets/images/Up/
+    - assets/images/Which/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

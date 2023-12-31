@@ -56,7 +56,7 @@ dart bin/cli.dart --path=images
 To test the embeddings, you can use the `test.dart` script as follows:
 
 ```bash
-dart bin/test.dart -t
+dart bin/cli.dart -t
 ```
 
 This will split your query into words and search for the embeddings of each word. It will then return the top result for each word.

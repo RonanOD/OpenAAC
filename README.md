@@ -1,8 +1,15 @@
 # Open Augmentative and Alternative Communication
 
-This project uses Generative AI to allow better communication with Neuro-atypical users via mobile devices.
+This project uses OpenAI Vector embeddings to translate a user's text/speech into easy to understand AAC symbols. This will assist communication between neurotypical and nonneurotypical users via mobile devices.
 
 The OpenAAC app will use OpenAI generate embeddings to match symbols to text to convert natural language to AAC pictograms.
+
+# Reason
+My name is [Ronan O'Driscoll](https://ronanodriscoll.com/). I am a software developer with a mostly nonverbal autistic son. It is often a struggle to pass back and forth his iPad to communicate, so I thought I would create a universal mobile for me to also input his symbols. We use the Speak4Yourself app, but it is only available on iOS. I wanted to create a free, open source alternative that could be used on any mobile device.
+
+OpenAAC can work with any AAC symbol set, the `db/` folder in this repo has a number of tools to prepare and upload these images as vector embeddings to the Pinecone online vector database.
+
+The `app/open_aac` folder contains the Flutter app that will use the Pinecone database to match text to symbols.
 
 ## AAC Symbol Sets 
  * [Open Symbols library](https://www.opensymbols.org/) 

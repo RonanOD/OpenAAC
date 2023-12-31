@@ -10,7 +10,9 @@ The goal is to assist in communication between neurotypical and nonneurotypical 
 
 
 # Background
-My name is [Ronan O'Driscoll](https://ronanodriscoll.com/). I am a software developer with an autistic son. Through therapy and assisted communication tools, his ability to communicate has improved considerably from when he was largely non-verbal. However, it is often a struggle to pass back and forth his iPad to communicate via his AAC app. So I thought I would create a universal mobile app for me to also input his symbols. We use the Speak4Yourself, but it is only available on iOS. I wanted to create a free, open source alternative that could be used on any mobile device.
+My name is [Ronan O'Driscoll](https://ronanodriscoll.com/). I am a software developer with an autistic son. Through therapy and assisted communication tools, his ability to communicate has improved considerably from when he was largely non-verbal. 
+
+However, it is often a struggle to pass back and forth his iPad to communicate via his AAC app. So I thought I would create a universal mobile app for me to also input his symbols. We use the Speak4Yourself app, but it is only available on iOS. I wanted to create a free, open source alternative that could be used on any mobile device.
 
 The OpenAAC App can work with any AAC symbol set, but you need to generate and upload them manually. The `db/` folder in this repo has a number of tools to prepare and upload and convert your images as vector embeddings to the Pinecone online vector database.
 

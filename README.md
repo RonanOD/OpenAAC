@@ -4,9 +4,11 @@
 
 AI can be used to help people communicate!
 
-This project uses [OpenAI Vector embeddings](https://platform.openai.com/docs/guides/embeddings) to translate a user's text/speech into easy to understand [AAC](https://www.asha.org/public/speech/disorders/aac/) symbols. The OpenAAC app will use OpenAI generated embeddings to match symbols to text to convert natural language to AAC pictograms.
+This project uses [OpenAI Vector embeddings](https://platform.openai.com/docs/guides/embeddings) to translate a user's text/speech into easy to understand [AAC](https://www.asha.org/public/speech/disorders/aac/) symbols. The OpenAAC app uses OpenAI to match symbols to text to convert natural language to AAC pictograms.
 
 The goal is to assist in communication between neurotypical and nonneurotypical users via mobile devices.
+
+[![Open AAC Demo](https://img.youtube.com/vi/0Lx7t2MB3DI/0.jpg)](https://youtu.be/0Lx7t2MB3DI)
 
 
 # Background

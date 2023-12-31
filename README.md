@@ -1,15 +1,18 @@
-# Open Augmentative and Alternative Communication
+# Open Augmentative and Alternative Communication App
+AI can be used to help people communicate.
 
-This project uses OpenAI Vector embeddings to translate a user's text/speech into easy to understand AAC symbols. This will assist communication between neurotypical and nonneurotypical users via mobile devices.
+This project uses [OpenAI Vector embeddings](https://platform.openai.com/docs/guides/embeddings) to translate a user's text/speech into easy to understand [AAC](https://www.asha.org/public/speech/disorders/aac/) symbols. This will assist communication between neurotypical and nonneurotypical users via mobile devices.
 
-The OpenAAC app will use OpenAI generate embeddings to match symbols to text to convert natural language to AAC pictograms.
+The OpenAAC app will use OpenAI generated embeddings to match symbols to text to convert natural language to AAC pictograms.
 
-# Reason
-My name is [Ronan O'Driscoll](https://ronanodriscoll.com/). I am a software developer with a mostly nonverbal autistic son. It is often a struggle to pass back and forth his iPad to communicate, so I thought I would create a universal mobile for me to also input his symbols. We use the Speak4Yourself app, but it is only available on iOS. I wanted to create a free, open source alternative that could be used on any mobile device.
+# Background
+My name is [Ronan O'Driscoll](https://ronanodriscoll.com/). I am a software developer with an autistic son. Through therapy and assisted communication tools, his ability to communicate has improved considerably from when he was largely non-verbal. However, it is often a struggle to pass back and forth his iPad to communicate via his AAC app. So I thought I would create a universal mobile app for me to also input his symbols. We use the Speak4Yourself, but it is only available on iOS. I wanted to create a free, open source alternative that could be used on any mobile device.
 
-OpenAAC can work with any AAC symbol set, the `db/` folder in this repo has a number of tools to prepare and upload these images as vector embeddings to the Pinecone online vector database.
+The OpenAAC App can work with any AAC symbol set, but you need to generate and upload them manually. The `db/` folder in this repo has a number of tools to prepare and upload and convert your images as vector embeddings to the Pinecone online vector database.
 
 The `app/open_aac` folder contains the Flutter app that will use the Pinecone database to match text to symbols.
+
+AI is a powerful tool. I hope this project can help people communicate better.
 
 ## AAC Symbol Sets 
  * [Open Symbols library](https://www.opensymbols.org/) 
@@ -24,12 +27,13 @@ The `app/open_aac` folder contains the Flutter app that will use the Pinecone da
 
  ## Installation
   1. Install Flutter: https://flutter.dev/docs/get-started/install
-  2. Create a Pinecone account: https://www.pinecone.io/
-  3. Create an OpenAI API account: https://platform.openai.com/
+  2. Create a Pinecone account: https://www.pinecone.io/. You can use the free tier for this project.
+  3. Create an OpenAI API account: https://platform.openai.com/. We will use the "text-embedding-ada-002" model which is priced very cheaply ($0.0001/1K tokens as of January 2024). See [this page](https://openai.com/pricing#language-models) for more details.
   4. Clone this repo
   5. Follow instructions in the `db/` folder to create a Pinecone database and upload your AAC symbols.
-  6. Use `flutter` in the `app/open_aac` folder to run the app locally.
-  7. Install on your android device by connecting it to the computer using `flutter install`. See [this page](https://docs.flutter.dev/deployment/android#install-an-apk-on-a-device) for more details.
+  6. Copy the generated icons to the `app/open_aac/assets/images` folder.
+  7. Use `flutter` in the `app/open_aac` folder to run the app locally.
+  8. Install on your android device by connecting it to the computer using `flutter install`. See [this page](https://docs.flutter.dev/deployment/android#install-an-apk-on-a-device) for more details.
 
 ## Usage
   1. Open the app
@@ -44,7 +48,7 @@ The `app/open_aac` folder contains the Flutter app that will use the Pinecone da
 
 ## Future Goals
  * Better integration with a number of AAC symbol sets
- * Allow users to upload their own symbol sets
- * Offline mode, so that the app can be used without an internet connection and/or Pinecone database.
+ * Allow users to upload their own custom symbols
+ * Offline mode, so that the app can be used without an internet connection and/or Pinecone database. Requires local vector database.
  * Text to speech option: A button to read out the text using the device's text to speech engine. This would also highlight the symbols as they are spoken.
  * Make freely available on the Google Play Store and Apple App Store

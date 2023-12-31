@@ -1,9 +1,5 @@
 import 'package:cli/cli.dart' as cli;
 import 'package:args/args.dart' show ArgParser;
-import 'dart:io' show Platform, sleep;
-import 'package:langchain_openai/langchain_openai.dart' show OpenAIEmbeddings;
-import 'package:langchain/langchain.dart' show Document;
-import 'package:pinecone/pinecone.dart';
 
 const String path = 'path';
 const String test = 'test';

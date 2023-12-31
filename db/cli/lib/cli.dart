@@ -35,7 +35,7 @@ void runTextTest() async {
 
   while(true) {
     print('Enter text to convert to an embedding image. Enter to exit.');
-    final text = await stdin.readLineSync();
+    final text = stdin.readLineSync();
     if (text!.isEmpty) {
       print('No text entered. Exiting.');
       return;

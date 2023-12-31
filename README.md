@@ -55,6 +55,7 @@ AI is a powerful tool. I hope this project can help people communicate better.
   9. The Clear button next to the text box will clear the text and symbols
 
 ## Future Goals
+ * A local cache of words to images to cut down on API calls
  * Use a Large Language Model (LLM) to generate symbols when there are low confidence matches in the vector DB.
  * Better integration with other AAC symbol sets
  * Allow users to upload their own custom symbols

@@ -192,25 +192,28 @@ class _SecondRouteState extends State<SecondRoute> {
                 labelText: 'OpenAI Api Key',
                 contentPadding: EdgeInsets.only(bottom: 1.0)),
             ),
+            SizedBox(height: 20),
             TextFormField(
               controller: pineconeKeyController,
               decoration: InputDecoration(
                 labelText: 'Pinecone Api Key',
                 contentPadding: EdgeInsets.only(bottom: 1.0)),
             ),
+            SizedBox(height: 20),
             TextFormField(
               controller: pineconeEnvController,
               decoration: InputDecoration(
                 labelText: 'Pinecone Environment',
                 contentPadding: EdgeInsets.only(bottom: 1.0)),
             ),
+            SizedBox(height: 20),
             TextFormField(
               controller: pineconeProjectIdController,
               decoration: InputDecoration(
                 labelText: 'Pinecone Project ID',
                 contentPadding: EdgeInsets.only(bottom: 1.0)),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 20),
             Row(
               children: [
                 SizedBox(width: 10),

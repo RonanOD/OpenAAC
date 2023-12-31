@@ -1,7 +1,12 @@
 # Open Augmentative and Alternative Communication App
-AI can be used to help people communicate.
 
-This project uses [OpenAI Vector embeddings](https://platform.openai.com/docs/guides/embeddings) to translate a user's text/speech into easy to understand [AAC](https://www.asha.org/public/speech/disorders/aac/) symbols. This will assist communication between neurotypical and nonneurotypical users via mobile devices.
+![OpenAAC App](docs/lets_speak.png?raw=true)
+
+AI can be used to help people communicate!
+
+This project uses [OpenAI Vector embeddings](https://platform.openai.com/docs/guides/embeddings) to translate a user's text/speech into easy to understand [AAC](https://www.asha.org/public/speech/disorders/aac/) symbols. 
+
+This will assist communication between neurotypical and nonneurotypical users via mobile devices.
 
 The OpenAAC app will use OpenAI generated embeddings to match symbols to text to convert natural language to AAC pictograms.
 
@@ -47,7 +52,8 @@ AI is a powerful tool. I hope this project can help people communicate better.
   9. The Clear button next to the text box will clear the text and symbols
 
 ## Future Goals
- * Better integration with a number of AAC symbol sets
+ * Use a Large Language Model (LLM) to generate symbols when there are low confidence matches in the vector DB.
+ * Better integration with other AAC symbol sets
  * Allow users to upload their own custom symbols
  * Offline mode, so that the app can be used without an internet connection and/or Pinecone database. Requires local vector database.
  * Text to speech option: A button to read out the text using the device's text to speech engine. This would also highlight the symbols as they are spoken.

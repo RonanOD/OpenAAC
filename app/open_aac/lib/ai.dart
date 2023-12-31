@@ -1,6 +1,7 @@
 import 'package:langchain_openai/langchain_openai.dart' show OpenAIEmbeddings;
 import 'package:pinecone/pinecone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:string_validator/string_validator.dart';
 
 const String modelName = 'text-embedding-ada-002';
 const String pcIndex   = 'openaac-embeddings';
@@ -34,6 +35,9 @@ Future<List<Mapping>> lookup(String text) async {
     // Split the text into a list of words
     List<String> words = text.split(' ');
     for (var word in words) {
+      if (word.isEmpty || word == '' || !isAlphanumeric(word)) {
+        continue;
+      }
       var embedding = await openAIEmbeddings.embedQuery(word);
       var response =  await pcClient.queryVectors(
           environment: config['pineconeEnv']!,

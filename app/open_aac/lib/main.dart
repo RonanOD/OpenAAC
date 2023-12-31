@@ -95,7 +95,7 @@ class _HomePageState extends State<HomePage> {
           appState.checkText(textController.text);
         },
         tooltip: 'Convert text to icons',
-        child: Icon(Icons.camera_alt_outlined),
+        child: Icon(Icons.search),
       ),
       body: Column(
         children: <Widget>[
@@ -108,16 +108,17 @@ class _HomePageState extends State<HomePage> {
                     border: OutlineInputBorder(),
                     hintText: 'Enter text to convert to icons',
                   ),
+                  onSubmitted: (text) => appState.checkText(text),
                 ),
               ),
               SizedBox(width: 10),
-              ElevatedButton.icon(
+              IconButton(
+                icon: const Icon(Icons.clear),
                 onPressed: () {
                   textController.clear();
                   appState.checkText("");
                 },
-                icon: Icon(Icons.clear),
-                label: Text('Clear'),
+                tooltip: 'Clear',
               ),
             ],
           ),

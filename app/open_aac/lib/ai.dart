@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'package:langchain_openai/langchain_openai.dart' show OpenAIEmbeddings;
 import 'package:pinecone/pinecone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +19,7 @@ class Mapping {
 // Perform a lookup on the current text using the AI engine
 Future<List<Mapping>> lookup(String text) async {
   List<Mapping> mappings = [];
-  if (!text!.isEmpty && await checkConfig()) {
+  if (text.isNotEmpty && await checkConfig()) {
     // Create Pinecone client
     PineconeClient pcClient = PineconeClient(
       apiKey: config['pineconeApiKey']!,
@@ -48,8 +47,8 @@ Future<List<Mapping>> lookup(String text) async {
             includeValues: false,
           ),
         );
-      if (response.matches!.length > 0) {
-        var imagePath = response.matches![0].metadata!['path'];
+      if (response.matches.isNotEmpty) {
+        var imagePath = response.matches[0].metadata!['path'];
         print("word $word => $imagePath");
         Mapping mapping = Mapping(word, imagePath);
         mappings.add(mapping);

@@ -4,11 +4,10 @@
 
 AI can be used to help people communicate!
 
-This project uses [OpenAI Vector embeddings](https://platform.openai.com/docs/guides/embeddings) to translate a user's text/speech into easy to understand [AAC](https://www.asha.org/public/speech/disorders/aac/) symbols. 
+This project uses [OpenAI Vector embeddings](https://platform.openai.com/docs/guides/embeddings) to translate a user's text/speech into easy to understand [AAC](https://www.asha.org/public/speech/disorders/aac/) symbols. The OpenAAC app will use OpenAI generated embeddings to match symbols to text to convert natural language to AAC pictograms.
 
-This will assist communication between neurotypical and nonneurotypical users via mobile devices.
+The goal is to assist in communication between neurotypical and nonneurotypical users via mobile devices.
 
-The OpenAAC app will use OpenAI generated embeddings to match symbols to text to convert natural language to AAC pictograms.
 
 # Background
 My name is [Ronan O'Driscoll](https://ronanodriscoll.com/). I am a software developer with an autistic son. Through therapy and assisted communication tools, his ability to communicate has improved considerably from when he was largely non-verbal. However, it is often a struggle to pass back and forth his iPad to communicate via his AAC app. So I thought I would create a universal mobile app for me to also input his symbols. We use the Speak4Yourself, but it is only available on iOS. I wanted to create a free, open source alternative that could be used on any mobile device.

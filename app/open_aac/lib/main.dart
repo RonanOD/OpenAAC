@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:open_aac/settings_page.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'ai.dart' as ai;
 
 void main() {
@@ -28,12 +28,23 @@ class OpenAAC extends StatelessWidget {
 
 class AppState extends ChangeNotifier {
   List<ai.Mapping> mappings = [];
+  bool isLoading = false;
 
   void checkText(var text) {
     ai.lookup(text).then((mappings) {
       this.mappings = mappings;
+      this.isLoading = false;
+      notifyListeners();
+    }).onError((error, stackTrace) {
+      print(error);
+      this.isLoading = false;
       notifyListeners();
     });
+  }
+
+  void setLoading(bool isLoading) {
+    this.isLoading = isLoading;
+    notifyListeners();
   }
 }
 
@@ -74,167 +85,86 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     var appState = context.watch<AppState>();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-           actions: <Widget>[
-             IconButton(
-               icon: const Icon(Icons.settings),
-               tooltip: 'App settings',
-               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SecondRoute()),
-                );
-              },
-             ),
-           ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          appState.checkText(textController.text);
-        },
-        tooltip: 'Convert text to icons',
-        child: Icon(Icons.search),
-      ),
-      body: Column(
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: TextField(
-                  controller: textController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter text to convert to icons',
-                  ),
-                  onSubmitted: (text) => appState.checkText(text),
-                ),
-              ),
-              SizedBox(width: 10),
+    if (appState.isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    } else {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
+            actions: <Widget>[
               IconButton(
-                icon: const Icon(Icons.clear),
+                icon: const Icon(Icons.settings),
+                tooltip: 'App settings',
                 onPressed: () {
-                  textController.clear();
-                  appState.checkText("");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SettingsPage()),
+                  );
                 },
-                tooltip: 'Clear',
               ),
             ],
-          ),
-          SizedBox(height: 10),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4, // Adjust number of items in a row
-                childAspectRatio: 1, // Adjust aspect ratio
-              ),
-              itemCount: getImageCount() , // Adjust number of items
-              itemBuilder: (context, index) {
-                return getImages()[index]; // Adjust index
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Second Route Class
-class SecondRoute extends StatefulWidget {
-  @override
-  _SecondRouteState createState() => _SecondRouteState();
-}
-
-class _SecondRouteState extends State<SecondRoute> {
-  final _formKey = GlobalKey<FormState>();
-  TextEditingController openAIController = TextEditingController();
-  TextEditingController pineconeKeyController = TextEditingController();
-  TextEditingController pineconeEnvController = TextEditingController();
-  TextEditingController pineconeProjectIdController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPreferences();
-  }
-
-  _loadPreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    openAIController.text = prefs.getString('openAIKey') ?? '';
-    pineconeKeyController.text = prefs.getString('pineconeKey') ?? '';
-    pineconeEnvController.text = prefs.getString('pineconeEnv') ?? '';
-    pineconeProjectIdController.text = prefs.getString('pineconeProjectID') ?? '';
-  }
-
-  _savePreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('openAIKey', openAIController.text);
-    prefs.setString('pineconeKey', pineconeKeyController.text);
-    prefs.setString('pineconeEnv', pineconeEnvController.text);
-    prefs.setString('pineconeProjectID', pineconeProjectIdController.text);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Settings"),
-      ),
-      body: Form(
-        key: _formKey,
-        child: Column(
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            appState.setLoading(true);
+            appState.checkText(textController.text);
+          },
+          tooltip: 'Convert text to icons',
+          child: Icon(Icons.search),
+        ),
+        body: Column(
           children: <Widget>[
-            TextFormField(
-              controller: openAIController,
-              decoration: InputDecoration(
-                labelText: 'OpenAI Api Key',
-                contentPadding: EdgeInsets.only(bottom: 1.0)),
-            ),
-            SizedBox(height: 20),
-            TextFormField(
-              controller: pineconeKeyController,
-              decoration: InputDecoration(
-                labelText: 'Pinecone Api Key',
-                contentPadding: EdgeInsets.only(bottom: 1.0)),
-            ),
-            SizedBox(height: 20),
-            TextFormField(
-              controller: pineconeEnvController,
-              decoration: InputDecoration(
-                labelText: 'Pinecone Environment',
-                contentPadding: EdgeInsets.only(bottom: 1.0)),
-            ),
-            SizedBox(height: 20),
-            TextFormField(
-              controller: pineconeProjectIdController,
-              decoration: InputDecoration(
-                labelText: 'Pinecone Project ID',
-                contentPadding: EdgeInsets.only(bottom: 1.0)),
-            ),
-            SizedBox(height: 20),
             Row(
-              children: [
-                SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text('Go Back'),
+              children: <Widget>[
+                Expanded(
+                  child: TextField(
+                    controller: textController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter text to convert to icons',
+                    ),
+                    onSubmitted: (text) {
+                      appState.setLoading(true);
+                      appState.checkText(text);
+                    },
+                  ),
                 ),
                 SizedBox(width: 10),
-                ElevatedButton(
+                IconButton(
+                  icon: const Icon(Icons.clear),
                   onPressed: () {
-                    _savePreferences();
+                    appState.setLoading(false);
+                    textController.clear();
+                    appState.checkText("");
                   },
-                  child: Text('Save'),
+                  tooltip: 'Clear',
                 ),
               ],
-            )
+            ),
+            SizedBox(height: 10),
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4, // Adjust number of items in a row
+                  childAspectRatio: 1, // Adjust aspect ratio
+                ),
+                itemCount: getImageCount() , // Adjust number of items
+                itemBuilder: (context, index) {
+                  return getImages()[index]; // Adjust index
+                },
+              ),
+            ),
           ],
         ),
-      ),
-    );
+      );
+    }
   }
 }
+

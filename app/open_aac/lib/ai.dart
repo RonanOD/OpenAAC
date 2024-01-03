@@ -6,6 +6,7 @@ import 'package:string_validator/string_validator.dart';
 const String modelName = 'text-embedding-ada-002';
 const String pcIndex   = 'openaac-embeddings';
 const String namespace = 'openaac-images';
+const String blankTilePath = 'images/_app/blank.png';
 
 // Config Map
 var config = { };
@@ -13,8 +14,9 @@ var config = { };
 class Mapping {
   final String word;
   final String imagePath;
+  final bool poorMatch;
 
-  Mapping(this.word, this.imagePath);
+  Mapping(this.word, this.imagePath, this.poorMatch);
 }
 
 // Perform a lookup on the current text using the AI engine
@@ -52,9 +54,16 @@ Future<List<Mapping>> lookup(String text) async {
           ),
         );
       if (response.matches.isNotEmpty) {
-        var imagePath = response.matches[0].metadata!['path'];
-        print("word $word => $imagePath");
-        Mapping mapping = Mapping(word, imagePath);
+        VectorMatch match = response.matches[0];
+        Mapping mapping;
+        if (match.score! < 0.92) {
+          print("poor match for $word");
+          mapping = Mapping(word, blankTilePath, true);
+        } else {
+          var imagePath = match.metadata!['path'];
+          print("word $word => $imagePath");
+          mapping = Mapping(word, imagePath, false);
+        }
         mappings.add(mapping);
       }
     }

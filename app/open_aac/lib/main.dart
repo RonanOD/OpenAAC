@@ -73,12 +73,32 @@ class _HomePageState extends State<HomePage> {
     return context.read<AppState>().mappings.length;
   }
 
-  List<Image> getImages() {
-    List<Image> images = [];
-    for (var mapping in context.read<AppState>().mappings) {
-      images.add(Image.asset("assets/${mapping.imagePath}"));
+  Widget getImage(int index) {
+    ai.Mapping mapping = context.read<AppState>().mappings[index];
+    if (mapping.poorMatch) {
+      Image blank = Image.asset("assets/${mapping.imagePath}");
+      return Stack(
+        children: <Widget>[
+          blank,
+          Align(
+            alignment: Alignment.topCenter, // Align however you like (i.e .centerRight, centerLeft)
+            widthFactor: 2,
+            child: Text(
+              mapping.word,
+              overflow: TextOverflow.fade,
+              softWrap: false,
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.black,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+          ),
+        ]
+      );
+    } else {
+      return Image.asset("assets/${mapping.imagePath}");
     }
-    return images;
   }
 
   @override
@@ -157,7 +177,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 itemCount: getImageCount() , // Adjust number of items
                 itemBuilder: (context, index) {
-                  return getImages()[index]; // Adjust index
+                  return getImage(index);
                 },
               ),
             ),

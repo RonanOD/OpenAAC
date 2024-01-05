@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:open_aac/settings_page.dart';
 import 'package:provider/provider.dart';
@@ -76,24 +75,33 @@ class _HomePageState extends State<HomePage> {
   Widget getImage(int index) {
     ai.Mapping mapping = context.read<AppState>().mappings[index];
     if (mapping.poorMatch) {
-      Image blank = Image.asset("assets/${mapping.imagePath}");
+      Image overlay = Image.memory(mapping.generatedImage);
+      Image blank = Image.asset("assets/${ai.blankTilePath}");
       return Stack(
         children: <Widget>[
-          blank,
-          Align(
-            alignment: Alignment.topCenter, // Align however you like (i.e .centerRight, centerLeft)
-            widthFactor: 2,
-            child: Text(
-              mapping.word,
-              overflow: TextOverflow.fade,
-              softWrap: false,
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.black,
-                fontWeight: FontWeight.bold
+          Positioned(
+            top: 1,
+            child: 
+              Align(
+                alignment: Alignment.topCenter,
+                widthFactor: 1.9,
+                child: Text(
+                  mapping.word,
+                  overflow: TextOverflow.fade,
+                  softWrap: false,
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold
+                  ),
+                ),
               ),
-            ),
           ),
+          Positioned(
+            top: 22,
+            child: overlay,
+          ),
+          blank, // Blank background has transparency to display above
         ]
       );
     } else {

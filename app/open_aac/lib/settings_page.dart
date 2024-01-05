@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'ai.dart' as ai;
 
 /// Settings Page
 class SettingsPage extends StatefulWidget {
@@ -34,6 +35,8 @@ class _SettingsPageState extends State<SettingsPage> {
     prefs.setString('pineconeKey', pineconeKeyController.text);
     prefs.setString('pineconeEnv', pineconeEnvController.text);
     prefs.setString('pineconeProjectID', pineconeProjectIdController.text);
+    // Reset the config map
+    ai.config = { };
   }
 
   @override

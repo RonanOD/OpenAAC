@@ -1,12 +1,22 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:langchain/langchain.dart' show Document;
 import 'package:langchain_openai/langchain_openai.dart' show OpenAIEmbeddings;
 import 'package:pinecone/pinecone.dart';
+import 'package:dart_openai/dart_openai.dart';
+import 'package:image/image.dart' as img;
 
 // Constants
 const String modelName = 'text-embedding-ada-002';
 const String pcIndex   = 'openaac-embeddings';
 const String namespace = 'openaac-images';
+const String imageGenPrompt = '''
+Create a simplified image of "XXXX", created only using primary colors 
+on a white background. The design should be minimalistic with no additional 
+details or text. This image should resemble the stylistic approach of icons 
+utilized in an AAC (Augmentative and Alternative Communication) application.''';
+const double vectorMatchThreshold = 0.92;
+const String imageGenModel = "dall-e-3";
 
 // Config Map
 var config = {
@@ -44,6 +54,8 @@ void runTextTest() async {
       // Split the text into a list of words
       List<String> words = text.split(' ');
       for (var word in words) {
+        word = word.replaceAll(RegExp(r"[^A-Za-z0-9']"), ""); // Strip out anything not alphanumeric
+        if (word.isEmpty) continue;
         var embedding = await openAIEmbeddings.embedQuery(word);
 
         var response =  await pcClient.queryVectors(
@@ -58,8 +70,37 @@ void runTextTest() async {
             includeValues: false,
           ),
         );
+        print("word $word => Initial: $response");
+        if (response.matches.isNotEmpty) {
+          VectorMatch match = response.matches[0];
+          if (match.score! < vectorMatchThreshold) {
+            print("poor match for $word. Attempting image generation.");
+            String prompt = imageGenPrompt.replaceAll('XXXX', word);
+            final image = await OpenAI.instance.image.create(
+              prompt: prompt,
+              model: imageGenModel,
+              n: 1,
+              size: OpenAIImageSize.size1024,
+              responseFormat: OpenAIImageResponseFormat.b64Json,
+            );
 
-        print("word $word => $response");
+            // Write image file to disk
+            final imageData = image.data[0];
+            final base64Decoder = base64.decoder;
+            final decodedBytes = base64Decoder.convert(imageData.b64Json ?? '');
+            if (decodedBytes.isNotEmpty) {
+              img.Image? rawImage = img.decodeImage(decodedBytes);
+              img.Image resized = img.copyResize(rawImage!, width: 144, height: 144);
+              final resizedData = img.encodeJpg(resized);
+              final imageFile = "$word.png";
+              var file = await File(imageFile).writeAsBytes(resizedData);
+              print("wrote to $file");
+            }
+          } else {
+            var imagePath = match.metadata!['path'];
+            print("word $word => $imagePath");
+          }
+        }
       }
     }
   }
@@ -155,6 +196,9 @@ bool checkConfig() {
     print('PINECONE_PROJECT_ID environment variable not set');
     return false;
   }
+
+  // Set the OpenAI API key for image generation
+  OpenAI.apiKey = config['openAIApiKey']!;
 
   return true;
 }

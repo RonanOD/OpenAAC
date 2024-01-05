@@ -34,11 +34,12 @@ AI is a powerful tool. I hope this project can help people communicate better.
  * [Pinecone](https://pub.dev/packages/pinecone): Pinecone vector database
  * [Langchain](https://pub.dev/packages/langchain): LangChain provides a set of ready-to-use components for working with language models and the concept of chains, which allows to "chain" components together to formulate more advanced use cases around LLMs.
  * [OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings): OpenAI’s text embeddings measure the relatedness of text strings
+ * [OpenAI DALL-E 3](https://openai.com/dall-e-3)
 
  ## Installation
   1. Install Flutter: https://flutter.dev/docs/get-started/install
   2. Create a Pinecone account: https://www.pinecone.io/. You can use the free tier for this project.
-  3. Create an OpenAI API account: https://platform.openai.com/. We will use the "text-embedding-ada-002" model which is priced very cheaply ($0.0001/1K tokens as of January 2024). See [this page](https://openai.com/pricing#language-models) for more details.
+  3. Create an OpenAI API account: https://platform.openai.com/. We will use the "text-embedding-ada-002" model which is priced very cheaply ($0.0001/1K tokens as of January 2024). See [this page](https://openai.com/pricing#language-models) for more details. For image generation, we will use "dall-e-3", which is free of charge (as of January 2024).
   4. Clone this repo
   5. Follow instructions in the `db/` folder to create a Pinecone database and upload your AAC symbols.
   6. Copy the generated icons to the `app/open_aac/assets/images` folder.

@@ -136,60 +136,64 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
             SizedBox(height: 10),
-            SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 1),
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: Wrap(
-                  alignment: WrapAlignment.spaceEvenly,
-                  spacing:1,
-                  runSpacing: 1,
-                  direction: Axis.horizontal,
-                  children: context.read<AppState>().mappings.map((item) {
-                    if (item.poorMatch) {
-                      Image overlay = Image.memory(item.generatedImage);
-                      Image blank = Image.asset("assets/${ai.blankTilePath}");
-                      return Stack(
-                        alignment: Alignment.center,
-                        children: <Widget>[
-                          Positioned.fill(
-                            child: 
-                              Align(
-                                alignment: Alignment.topCenter,
-                                widthFactor: 2.5,
-                                 child: Text(
-                                  item.word,
-                                  overflow: TextOverflow.fade,
-                                  softWrap: false,
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                padding: const EdgeInsets.symmetric(vertical: 1),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceEvenly,
+                    spacing:1,
+                    runSpacing: 1,
+                    direction: Axis.horizontal,
+                    children: context.read<AppState>().mappings.map((item) {
+                      if (item.poorMatch) {
+                        Image overlay = Image.memory(item.generatedImage);
+                        Image blank = Image.asset("assets/${ai.blankTilePath}");
+                        return Stack(
+                          alignment: Alignment.center,
+                          children: <Widget>[
+                            Positioned.fill(
+                              child: 
+                                Align(
+                                  alignment: Alignment.topCenter,
+                                  widthFactor: 2.5,
+                                  child: Text(
+                                    item.word,
+                                    overflow: TextOverflow.fade,
+                                    softWrap: false,
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold
+                                    ),
                                   ),
                                 ),
-                              ),
-                          ),
-                          Positioned(
-                            top: 24,
-                            width: blank.width,
-                            height: blank.height,
-                            child: overlay,
-                          ),
-                          blank, // Blank background has transparency to display above
-                        ],
-                      );
-                    } else {
-                      return Column(
-                        children: [
-                          Image.asset("assets/${item.imagePath}"),
-                        ],
-                      );
-                    }
-                  },
-                ).toList(),
+                            ),
+                            Positioned(
+                              top: 24,
+                              width: blank.width,
+                              height: blank.height,
+                              child: overlay,
+                            ),
+                            blank, // Blank background has transparency to display above
+                          ],
+                        );
+                      } else {
+                        return Column(
+                          children: [
+                            Image.asset("assets/${item.imagePath}"),
+                          ],
+                        );
+                      }
+                    },
+                  ).toList(),
+                ),
               ),
             ),
-            ),
+          ),
           ],
         ),
       );

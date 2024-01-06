@@ -68,47 +68,6 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  int getImageCount() {
-    return context.read<AppState>().mappings.length;
-  }
-
-  Widget getImage(int index) {
-    ai.Mapping mapping = context.read<AppState>().mappings[index];
-    if (mapping.poorMatch) {
-      Image overlay = Image.memory(mapping.generatedImage);
-      Image blank = Image.asset("assets/${ai.blankTilePath}");
-      return Stack(
-        children: <Widget>[
-          Positioned(
-            top: 1,
-            child: 
-              Align(
-                alignment: Alignment.topCenter,
-                widthFactor: 1.9,
-                child: Text(
-                  mapping.word,
-                  overflow: TextOverflow.fade,
-                  softWrap: false,
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold
-                  ),
-                ),
-              ),
-          ),
-          Positioned(
-            top: 22,
-            child: overlay,
-          ),
-          blank, // Blank background has transparency to display above
-        ]
-      );
-    } else {
-      return Image.asset("assets/${mapping.imagePath}");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<AppState>();
@@ -177,17 +136,59 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
             SizedBox(height: 10),
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4, // Adjust number of items in a row
-                  childAspectRatio: 1, // Adjust aspect ratio
-                ),
-                itemCount: getImageCount() , // Adjust number of items
-                itemBuilder: (context, index) {
-                  return getImage(index);
-                },
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 1),
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Wrap(
+                  alignment: WrapAlignment.spaceEvenly,
+                  spacing:1,
+                  runSpacing: 1,
+                  direction: Axis.horizontal,
+                  children: context.read<AppState>().mappings.map((item) {
+                    if (item.poorMatch) {
+                      Image overlay = Image.memory(item.generatedImage);
+                      Image blank = Image.asset("assets/${ai.blankTilePath}");
+                      return Stack(
+                        alignment: Alignment.center,
+                        children: <Widget>[
+                          Positioned.fill(
+                            child: 
+                              Align(
+                                alignment: Alignment.topCenter,
+                                widthFactor: 2.5,
+                                 child: Text(
+                                  item.word,
+                                  overflow: TextOverflow.fade,
+                                  softWrap: false,
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold
+                                  ),
+                                ),
+                              ),
+                          ),
+                          Positioned(
+                            top: 24,
+                            width: blank.width,
+                            height: blank.height,
+                            child: overlay,
+                          ),
+                          blank, // Blank background has transparency to display above
+                        ],
+                      );
+                    } else {
+                      return Column(
+                        children: [
+                          Image.asset("assets/${item.imagePath}"),
+                        ],
+                      );
+                    }
+                  },
+                ).toList(),
               ),
+            ),
             ),
           ],
         ),

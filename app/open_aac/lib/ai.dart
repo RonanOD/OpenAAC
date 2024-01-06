@@ -105,7 +105,7 @@ Future<Mapping> _generateImage(String word) async {
   final decodedBytes = base64Decoder.convert(imageData.b64Json ?? '');
   if (decodedBytes.isNotEmpty) {
     img.Image? rawImage = img.decodeImage(decodedBytes);
-    img.Image resized = img.copyResize(rawImage!, width: 80, height: 80);
+    img.Image resized = img.copyResize(rawImage!, width: 144, height: 144);
     final resizedData = img.encodePng(resized);
     mapping = Mapping(word, null, true);
     mapping.generatedImage = resizedData;

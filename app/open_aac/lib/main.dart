@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:open_aac/settings_page.dart';
 import 'package:provider/provider.dart';
+
 import 'ai.dart' as ai;
+import 'tts.dart' as tts;
 
 void main() {
   runApp(OpenAAC());
@@ -60,12 +62,25 @@ class _HomePageState extends State<HomePage> {
   // Create a text controller and use it to retrieve the current value
   // of the TextField.
   final textController = TextEditingController();
+  final tts.AppTts appTts = tts.AppTts();
 
   @override
   void dispose() {
     // Clean up the controller when the widget is disposed.
     textController.dispose();
+    appTts.stop();
     super.dispose();
+  }
+
+  @override
+  initState() {
+    super.initState();
+    appTts.initTts();
+  }
+
+  void _onTileClicked(String word){
+    //debugPrint("You tapped on item $word");
+    appTts.flutterTts.speak(word);
   }
 
   @override
@@ -152,40 +167,46 @@ class _HomePageState extends State<HomePage> {
                       if (item.poorMatch) {
                         Image overlay = Image.memory(item.generatedImage);
                         Image blank = Image.asset("assets/${ai.blankTilePath}");
-                        return Stack(
-                          alignment: Alignment.center,
-                          children: <Widget>[
-                            Positioned.fill(
-                              child: 
-                                Align(
-                                  alignment: Alignment.topCenter,
-                                  widthFactor: 2.5,
-                                  heightFactor: 1.2,
-                                  child: Text(
-                                    item.word,
-                                    overflow: TextOverflow.fade,
-                                    softWrap: false,
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold
+                        return InkResponse(
+                          onTap: () => _onTileClicked(item.word),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Positioned.fill(
+                                child: 
+                                  Align(
+                                    alignment: Alignment.topCenter,
+                                    widthFactor: 2.5,
+                                    heightFactor: 1.2,
+                                    child: Text(
+                                      item.word,
+                                      overflow: TextOverflow.fade,
+                                      softWrap: false,
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold
+                                      ),
                                     ),
                                   ),
-                                ),
-                            ),
-                            Positioned(
-                              top: 26,
-                              width: blank.width,
-                              height: blank.height,
-                              child: overlay,
-                            ),
-                            blank, // Blank background has transparency to display above
-                          ],
+                              ),
+                              Positioned(
+                                top: 26,
+                                width: blank.width,
+                                height: blank.height,
+                                child: overlay,
+                              ),
+                              blank, // Blank background has transparency to display above
+                            ],
+                          ),
                         );
                       } else {
                         return Column(
                           children: [
-                            Image.asset("assets/${item.imagePath}"),
+                            InkResponse(
+                              onTap: () => _onTileClicked(item.word),
+                              child: Image.asset("assets/${item.imagePath}")
+                            ),
                           ],
                         );
                       }
@@ -201,4 +222,3 @@ class _HomePageState extends State<HomePage> {
     }
   }
 }
-

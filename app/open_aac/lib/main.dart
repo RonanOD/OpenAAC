@@ -142,7 +142,7 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 1),
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
+                  height: 164 * ((context.read<AppState>().mappings.length / 2) + 1),
                   child: Wrap(
                     alignment: WrapAlignment.spaceEvenly,
                     spacing:1,
@@ -160,6 +160,7 @@ class _HomePageState extends State<HomePage> {
                                 Align(
                                   alignment: Alignment.topCenter,
                                   widthFactor: 2.5,
+                                  heightFactor: 1.2,
                                   child: Text(
                                     item.word,
                                     overflow: TextOverflow.fade,
@@ -173,7 +174,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                             ),
                             Positioned(
-                              top: 24,
+                              top: 26,
                               width: blank.width,
                               height: blank.height,
                               child: overlay,

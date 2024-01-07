@@ -79,7 +79,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onTileClicked(String word){
-    //debugPrint("You tapped on item $word");
     appTts.flutterTts.speak(word);
   }
 
@@ -145,6 +144,15 @@ class _HomePageState extends State<HomePage> {
                     appState.setLoading(false);
                     textController.clear();
                     appState.checkText("");
+                  },
+                  tooltip: 'Clear',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.record_voice_over),
+                  onPressed: () {
+                    if (textController.text.isNotEmpty) {
+                      appTts.flutterTts.speak(textController.text);
+                    }
                   },
                   tooltip: 'Clear',
                 ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'ai.dart' as ai;
 
+const String imageCachePrefix = "images/";
+
 /// Settings Page
 class SettingsPage extends StatefulWidget {
   @override
@@ -37,6 +39,16 @@ class _SettingsPageState extends State<SettingsPage> {
     prefs.setString('pineconeProjectID', pineconeProjectIdController.text);
     // Reset the config map
     ai.config = { };
+  }
+
+  _clearImagesCache() async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys();
+      for (var key in keys) {
+        if (key.startsWith(imageCachePrefix)) {
+          prefs.remove(key);
+        }
+      }
   }
 
   @override
@@ -94,7 +106,31 @@ class _SettingsPageState extends State<SettingsPage> {
                   child: Text('Save'),
                 ),
               ],
-            )
+            ),
+            Row(
+              children: [
+                Column(
+                  children: [
+                    SizedBox(height: 20),
+                    SizedBox(
+                      child: Text('Images Cache',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      )
+                    ),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        _clearImagesCache();
+                      },
+                      child: Text('Clear Cache'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
       ),

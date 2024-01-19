@@ -18,6 +18,7 @@ details or text. This image should resemble the stylistic approach of icons
 utilized in an AAC (Augmentative and Alternative Communication) application.''';
 const double vectorMatchThreshold = 0.92;
 const String imageGenModel = "dall-e-3";
+const String imageCachePrefix = "images/";
 
 // Config Map
 var config = { };
@@ -87,23 +88,40 @@ Future<List<Mapping>> lookup(String text) async {
   return mappings;
 }
 
-// Use OpenAI to generate an image as there isn't a close enough pinecone match
+// Use OpenAI to generate an image as there isn't a close enough pinecone match.
+// Cache generated images in local storage to keep costs down
 Future<Mapping> _generateImage(String word) async {
   Mapping mapping;
-  String prompt = imageGenPrompt.replaceAll('XXXX', word);
+  String? b64Json;
+  String cacheKey = imageCachePrefix + word;
 
-  final image = await OpenAI.instance.image.create(
-    prompt: prompt,
-    model: imageGenModel,
-    n: 1,
-    size: OpenAIImageSize.size1024,
-    responseFormat: OpenAIImageResponseFormat.b64Json,
-  );
-  
-  // Copy resized image file to memory
-  final imageData = image.data[0];
+  // Check Shared Preferences for cached image data
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  final cachedB64Json = prefs.getString(cacheKey);
+
+  if (cachedB64Json == null) { // Call out to OpenAI to generate the image
+    String prompt = imageGenPrompt.replaceAll('XXXX', word);
+
+    final image = await OpenAI.instance.image.create(
+      prompt: prompt,
+      model: imageGenModel,
+      n: 1,
+      style: OpenAIImageStyle.vivid,
+      size: OpenAIImageSize.size1024,
+      responseFormat: OpenAIImageResponseFormat.b64Json,
+    );
+    
+    // Copy resized image file to memory
+    final imageData = image.data[0];
+    b64Json = imageData.b64Json;
+    
+    prefs.setString(cacheKey, b64Json!); // Save to cache for future use
+  } else {
+    b64Json = cachedB64Json;
+  }
+
   final base64Decoder = base64.decoder;
-  final decodedBytes = base64Decoder.convert(imageData.b64Json ?? '');
+  final decodedBytes = base64Decoder.convert(b64Json);
   if (decodedBytes.isNotEmpty) {
     img.Image? rawImage = img.decodeImage(decodedBytes);
     img.Image resized = img.copyResize(rawImage!, width: 144, height: 144);

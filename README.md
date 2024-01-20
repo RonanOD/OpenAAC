@@ -1,6 +1,6 @@
 # Open Augmentative and Alternative Communication App
 
-![OpenAAC App](docs/lets_speak.png?raw=true)
+![OpenAAC App](docs/lets_speak.png?raw=true)![OpenAAC App Settings](docs/settings.png?raw=true)
 
 AI can be used to help people communicate!
 

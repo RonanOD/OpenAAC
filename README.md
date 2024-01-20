@@ -28,7 +28,8 @@ The `app/open_aac` folder contains the Flutter app that will use the Pinecone da
 AI is a powerful tool. I hope this project can help people communicate better.
 
 ## AAC Symbol Sets 
- * [Open Symbols library](https://www.opensymbols.org/) 
+ * [Open Symbols library](https://www.opensymbols.org/)
+ * [The Noun Project](https://thenounproject.com/)
  * [Speak4Yourself](https://speakforyourself.org/)
    * Free download of the Speak4Yourself AAC symbols here: https://smartysymbols.com/download/free-speak-for-yourself-printable/
 

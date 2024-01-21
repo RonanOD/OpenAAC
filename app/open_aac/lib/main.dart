@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:open_aac/settings_page.dart';
+import 'package:openaac/settings_page.dart';
 import 'package:provider/provider.dart';
 
 import 'ai.dart' as ai;

@@ -1,4 +1,4 @@
-package com.example.open_aac
+package org.learningo.openaac
 
 import io.flutter.embedding.android.FlutterActivity
 

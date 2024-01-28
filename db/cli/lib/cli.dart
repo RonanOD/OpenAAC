@@ -5,9 +5,10 @@ import 'package:langchain_openai/langchain_openai.dart' show OpenAIEmbeddings;
 import 'package:pinecone/pinecone.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:image/image.dart' as img;
+import 'package:supabase/supabase.dart';
 
 // Constants
-const String modelName = 'text-embedding-ada-002';
+const String modelName = 'text-embedding-3-small';
 const String pcIndex   = 'openaac-embeddings';
 const String namespace = 'openaac-images';
 const String imageGenPrompt = '''
@@ -17,6 +18,7 @@ details or text. This image should resemble the stylistic approach of icons
 utilized in an AAC (Augmentative and Alternative Communication) application.''';
 const double vectorMatchThreshold = 0.92;
 const String imageGenModel = "dall-e-3";
+const String supabaseImagesTable = 's4y_images';
 
 // Config Map
 var config = {
@@ -24,18 +26,30 @@ var config = {
   'pineconeApiKey':    Platform.environment['PINECONE_API_KEY'],
   'pineconeEnv':       Platform.environment['PINECONE_ENV'],
   'pineconeProjectID': Platform.environment['PINECONE_PROJECT_ID'],
+  'supabaseURL':       Platform.environment['SUPABASE_URL'],
+  'supabaseAnonKey':   Platform.environment['SUPABASE_ANON_KEY'],
 };
 
 // Run a loop testing the conversion of text to embedding images
-void runTextTest() async {
-  if (!checkConfig()) {
+void runTextTest(bool pinecone) async {
+  PineconeClient? pcClient;
+  SupabaseClient? sbClient;
+
+  if (!checkConfig(pinecone)) {
     return;
   }
 
-  // Create Pinecone client
-  PineconeClient pcClient = PineconeClient(
-    apiKey: config['pineconeApiKey']!,
-  );
+  if (pinecone) {
+    // Create Pinecone client
+    pcClient = PineconeClient(
+      apiKey: config['pineconeApiKey']!,
+    );
+  } else {
+    sbClient = SupabaseClient(
+      config['supabaseURL']!, 
+      config['supabaseAnonKey']!
+    );
+  }
 
   // Create OpenAIEmbeddings client
   OpenAIEmbeddings openAIEmbeddings = OpenAIEmbeddings(
@@ -53,62 +67,140 @@ void runTextTest() async {
       print("text to lookup: $text");
       // Split the text into a list of words
       List<String> words = text.split(' ');
-      for (var word in words) {
-        word = word.replaceAll(RegExp(r"[^A-Za-z0-9']"), ""); // Strip out anything not alphanumeric
-        if (word.isEmpty) continue;
-        var embedding = await openAIEmbeddings.embedQuery(word);
-
-        var response =  await pcClient.queryVectors(
-          environment: config['pineconeEnv']!,
-          projectId: config['pineconeProjectID']!,
-          indexName: pcIndex,
-          request: QueryRequest(
-            includeMetadata: true,
-            namespace: namespace,
-            vector: embedding,
-            topK: 1,
-            includeValues: false,
-          ),
-        );
-        print("word $word => Initial: $response");
-        if (response.matches.isNotEmpty) {
-          VectorMatch match = response.matches[0];
-          if (match.score! < vectorMatchThreshold) {
-            print("poor match for $word. Attempting image generation.");
-            String prompt = imageGenPrompt.replaceAll('XXXX', word);
-            final image = await OpenAI.instance.image.create(
-              prompt: prompt,
-              model: imageGenModel,
-              n: 1,
-              size: OpenAIImageSize.size1024,
-              responseFormat: OpenAIImageResponseFormat.b64Json,
-            );
-
-            // Write image file to disk
-            final imageData = image.data[0];
-            final base64Decoder = base64.decoder;
-            final decodedBytes = base64Decoder.convert(imageData.b64Json ?? '');
-            if (decodedBytes.isNotEmpty) {
-              img.Image? rawImage = img.decodeImage(decodedBytes);
-              img.Image resized = img.copyResize(rawImage!, width: 144, height: 144);
-              final resizedData = img.encodeJpg(resized);
-              final imageFile = "$word.png";
-              var file = await File(imageFile).writeAsBytes(resizedData);
-              print("wrote to $file");
-            }
-          } else {
-            var imagePath = match.metadata!['path'];
-            print("word $word => $imagePath");
-          }
-        }
+      if (pinecone) {
+        await processPineconeText(words, openAIEmbeddings, pcClient!);
+      } else {
+        await processSupabaseText(words, openAIEmbeddings, sbClient!);
       }
     }
   }
 }
 
+Future<void> processSupabaseText(List<String> words, OpenAIEmbeddings openAIEmbeddings, SupabaseClient sbClient) async {
+  for (var word in words) {
+    word = word.replaceAll(RegExp(r"[^A-Za-z0-9']"), ""); // Strip out anything not alphanumeric
+    if (word.isEmpty) continue;
+    final response = await sbClient.functions.invoke(
+      "getImages", 
+      body: {'words': word},
+      headers: {'Authorization': "Bearer ${config['supabaseAnonKey']}",
+        'Content-Type': 'application/json'}
+    );
+  
+    print("word $word => Status: ${response.status} Initial: ${response.data}");
+    if (response.status == 200 && response.data.length > 0) {
+      final match = response.data[0];
+      final similarity = match['similarity'].toString();
+      
+      if (double.parse(similarity) < vectorMatchThreshold) {
+        await generateImage(word);
+      } else {
+        var imagePath = match['path'];
+        print("word $word => $imagePath");
+      }
+    }
+    
+  }
+  exit(0); // Need explicit exit as Supabase client thread seems to persist
+}
+
+Future<void> processPineconeText(List<String> words, OpenAIEmbeddings openAIEmbeddings, PineconeClient pcClient) async {
+  for (var word in words) {
+    word = word.replaceAll(RegExp(r"[^A-Za-z0-9']"), ""); // Strip out anything not alphanumeric
+    if (word.isEmpty) continue;
+    var embedding = await openAIEmbeddings.embedQuery(word);
+  
+    var response =  await pcClient.queryVectors(
+      environment: config['pineconeEnv']!,
+      projectId: config['pineconeProjectID']!,
+      indexName: pcIndex,
+      request: QueryRequest(
+        includeMetadata: true,
+        namespace: namespace,
+        vector: embedding,
+        topK: 1,
+        includeValues: false,
+      ),
+    );
+    print("word $word => Initial: $response");
+    if (response.matches.isNotEmpty) {
+      VectorMatch match = response.matches[0];
+      if (match.score! < vectorMatchThreshold) {
+        await generateImage(word);
+      } else {
+        var imagePath = match.metadata!['path'];
+        print("word $word => $imagePath");
+      }
+    }
+  }
+}
+
+Future<void> generateImage(String word) async {
+  print("poor match for $word. Attempting image generation.");
+  String prompt = imageGenPrompt.replaceAll('XXXX', word);
+  final image = await OpenAI.instance.image.create(
+    prompt: prompt,
+    model: imageGenModel,
+    n: 1,
+    size: OpenAIImageSize.size1024,
+    responseFormat: OpenAIImageResponseFormat.b64Json,
+  );
+    
+  // Write image file to disk
+  final imageData = image.data[0];
+  final base64Decoder = base64.decoder;
+  final decodedBytes = base64Decoder.convert(imageData.b64Json ?? '');
+  if (decodedBytes.isNotEmpty) {
+    img.Image? rawImage = img.decodeImage(decodedBytes);
+    img.Image resized = img.copyResize(rawImage!, width: 144, height: 144);
+    final resizedData = img.encodeJpg(resized);
+    final imageFile = "$word.png";
+    var file = await File(imageFile).writeAsBytes(resizedData);
+    print("wrote to $file");
+  }
+}
+
+// Load images from a directory and upload them to Supabase
+void loadSupabaseImages(String path) async {
+  if (!checkConfig(false)) {
+    return;
+  }
+  
+  // Create Supabase Client
+  final supabaseClient = SupabaseClient(config['supabaseURL']!, config['supabaseAnonKey']!);
+
+  // Create OpenAIEmbeddings client
+  final openAIEmbeddings = OpenAIEmbeddings(
+    apiKey: config['openAIApiKey']!,
+    model: modelName,
+  );
+
+  List<String> images = getImages(path);
+
+  List<Document> documents = populateDocuments(images);
+  
+  final docEmbeddings = await convertDocumentsToEmbeddings(documents, openAIEmbeddings);
+
+  List<Map<String, dynamic>> imageDocs = [];
+  for (var i = 0; i < docEmbeddings.length; i++) {
+    Map<String, dynamic> row = {};
+    row['content'] = documents[i].metadata['text'];
+    row['path'] = documents[i].metadata['path'];
+    row['embedding'] = docEmbeddings[i];
+    imageDocs.add(row);
+  }
+
+  await supabaseClient.from(supabaseImagesTable).insert(imageDocs);
+  final count = await supabaseClient.from(supabaseImagesTable).count();
+
+  print("Inserted $count rows.");
+  
+  exit(0); // Need explicit exit as Supabase client thread seems to persist
+}
+
 // Load images from a directory and upload them to Pinecone
-void loadImages(String path) {
-  if (!checkConfig()) {
+void loadPineconeImages(String path) {
+  if (!checkConfig(true)) {
     return;
   }
 
@@ -172,29 +264,43 @@ void loadImages(String path) {
 }
 
 // Check the config map for the required keys
-bool checkConfig() {
+bool checkConfig(bool pinecone) {
   // Get OPENAI_API_KEY from environment variable: https://help.openai.com/en/articles/4936850-where-do-i-find-my-api-key
   if (config['openAIApiKey'] == null) {
     print('OPENAI_API_KEY environment variable not set');
     return false;
   }
 
-  // Get PINECONE_API_KEY from environment variable: https://docs.pinecone.io/docs/projects#api-keys
-  if (config['pineconeApiKey'] == null) {
-    print('PINECONE_API_KEY environment variable not set');
-    return false;
-  }
+  if (pinecone) {
+    // Get PINECONE_API_KEY from environment variable: https://docs.pinecone.io/docs/projects#api-keys
+    if (config['pineconeApiKey'] == null) {
+      print('PINECONE_API_KEY environment variable not set');
+      return false;
+    }
 
-  // Get PINECONE_ENV from environment variable: https://docs.pinecone.io/docs/projects#project-environment
-  if (config['pineconeEnv'] == null) {
-    print('PINECONE_ENV environment variable not set');
-    return false;
-  }
+    // Get PINECONE_ENV from environment variable: https://docs.pinecone.io/docs/projects#project-environment
+    if (config['pineconeEnv'] == null) {
+      print('PINECONE_ENV environment variable not set');
+      return false;
+    }
 
-  // Get PINECONE_PROJECT_ID from environment variable: https://docs.pinecone.io/docs/projects#project-id
-  if (config['pineconeProjectID'] == null) {
-    print('PINECONE_PROJECT_ID environment variable not set');
-    return false;
+    // Get PINECONE_PROJECT_ID from environment variable: https://docs.pinecone.io/docs/projects#project-id
+    if (config['pineconeProjectID'] == null) {
+      print('PINECONE_PROJECT_ID environment variable not set');
+      return false;
+    }
+  } else { // Only alternative is Supabase for now
+    // Get SUPABASE_URL from environment variable: https://supabase.com/docs/guides/auth/sessions
+    if (config['supabaseURL'] == null) {
+      print('SUPABASE_URL environment variable not set');
+      return false;
+    }
+
+    // Get SUPABASE_ANON_KEY from environment variable: https://supabase.com/docs/guides/auth/sessions
+    if (config['supabaseAnonKey'] == null) {
+      print('SUPABASE_ANON_KEY environment variable not set');
+      return false;
+    }
   }
 
   // Set the OpenAI API key for image generation

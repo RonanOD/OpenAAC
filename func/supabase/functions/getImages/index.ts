@@ -30,9 +30,7 @@ Deno.serve(async (req) => {
   // OpenAI recommends replacing newlines with spaces for best results
   const input = words.replace(/\n/g, ' ')
 
-  // TODO: Load from Env
-  // const apiKey = Deno.env.get('OPENAI_API_KEY')
-  const apiKey = 'oopsie'
+  const apiKey = Deno.env.get('OPENAI_API_KEY')
   const openai = new OpenAI({
     apiKey: apiKey,
   })

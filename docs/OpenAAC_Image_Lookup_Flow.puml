@@ -1,0 +1,43 @@
+@startuml
+
+skinparam component {
+    FontColor          black
+    AttributeFontColor black
+    FontSize           17
+    AttributeFontSize  15
+    AttributeFontname  Droid Sans Mono
+    BackgroundColor    #6A9EFF
+    BorderColor        black
+    ArrowColor         #222266
+}
+
+title "OpenAAC Image Lookup Flow"
+skinparam componentStyle uml2
+
+left to right direction
+
+[OpenAAC Flutter App\n(Android and iOS)] as App
+(OpenAI Image Gen) as ImageGen
+(OpenAI Embedding Service) as EmbeddingSvc
+
+package "Supabase Cloud" {
+    [Supabase Auth] as Auth
+    [Supabase Edge Function] as Edge
+    [Supabase Storage] as Storage
+    [Supabase Postgres Service] as DBSvc
+    database "Images Table With Vector Embeddings" as DBTable
+}
+
+App --> Auth: 1. User authenticates
+
+App -> Edge: 2. Get Image for word
+
+Edge -up-> EmbeddingSvc: 3. Convert word to embedding
+Edge -> DBSvc: 4. Call DB Vector Match Function
+
+DBSvc -> DBTable: 5. Run Cosine Similarity Match
+
+Edge -up-> ImageGen: 5.5 Generate image for a poor match
+
+App --> Storage: 6. Images retrieved  and cached locally
+@enduml

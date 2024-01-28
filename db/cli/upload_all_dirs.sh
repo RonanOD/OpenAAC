@@ -13,7 +13,7 @@ do
   echo "Uploading $dir..."
 
   # Run the Dart script with the directory path as an argument
-  dart bin/cli.dart --pinecone_path="$dir"
+  dart bin/cli.dart --supabase_path="$dir"
 
   # Wait for the user to hit Enter before continuing
   echo "Press Enter to continue..."

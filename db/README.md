@@ -1,7 +1,7 @@
 # OpenAAC DB
 
-OpenAAC uses a hosted pinecone vector database to store and retrieve the vector embeddings of the symbols.
-The database is hosted on Pinecone and is accessible via the [pinecone](https://pub.dev/packages/pinecone) package.
+OpenAAC uses a hosted vector database to store and retrieve the vector embeddings of the symbols.
+The database is hosted on Pinecone or Supabase and is accessible via the associated dart package.
 
 ## Setup
 You will need AAC symbols in the form of images to upload to the database. Each tile needs to be titled with the word 
@@ -46,10 +46,62 @@ The files must be named in the format `word.png` where `word` is the word the ti
 
 ## Upload
 To upload the images to the database, you can use the `cli.dart` script. You will need to have an account with
-Pinecone and OpenAI. Run the following command to upload the images:
+Pinecone or Supabase and OpenAI. Run the following command to upload the images:
 
 ```bash
-dart bin/cli.dart --path=images
+dart bin/cli.dart --pinecone_path=images
+```
+
+## Supabase
+Inspiration for database and query creation is [here](https://supabase.com/blog/openai-embeddings-postgres-vector).
+
+### Table
+```sql
+create extension vector;
+```
+
+```sql
+create table s4y_images (
+  id bigserial primary key,
+  content text,
+  path text,
+  embedding vector(1536)
+);
+```
+
+### Function
+```sql
+create or replace function match_images (
+  query_embedding vector(1536),
+  match_threshold float,
+  match_count int
+)
+returns table (
+  id bigint,
+  content text,
+  path text,
+  similarity float
+)
+language sql stable
+as $$
+  select
+    s4y_images.id,
+    s4y_images.content,
+    s4y_images.path,
+    1 - (s4y_images.embedding <=> query_embedding) as similarity
+  from s4y_images
+  where s4y_images.embedding <=> query_embedding < 1 - match_threshold
+  order by s4y_images.embedding <=> query_embedding
+  limit match_count;
+$$;
+```
+### Index
+Recommended to add index after majority of images are uploaded
+```sql
+create index on s4y_images using ivfflat (embedding vector_cosine_ops)
+with
+  (lists = 100);
+
 ```
 
 ## Test
@@ -62,4 +114,4 @@ dart bin/cli.dart -t
 This will split your query into words and search for the embeddings of each word. It will then return the top result for each word.
 
 ### TODO
- - Use an LLM to searc for the embeddings as described in [this article](https://docs.pinecone.io/docs/langchain#creating-a-vector-store-and-querying) 
+ - Use an LLM to search for the embeddings as described in [this article](https://docs.pinecone.io/docs/langchain#creating-a-vector-store-and-querying) 

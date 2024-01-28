@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
 
   // TODO: Load from Env
   // const apiKey = Deno.env.get('OPENAI_API_KEY')
-  const apiKey = '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'
+  const apiKey = 'oopsie'
   const openai = new OpenAI({
     apiKey: apiKey,
   })

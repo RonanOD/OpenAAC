@@ -1,232 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:openaac/settings_page.dart';
-import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'ai.dart' as ai;
-import 'tts.dart' as tts;
+import 'package:openaac/pages/splash_page.dart';
+import 'package:openaac/pages/login_page.dart';
+import 'package:openaac/pages/account_page.dart';
 
-void main() {
+const publicAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwY3hleGhydWRrdHlya2tla25lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDU4NDEwODgsImV4cCI6MjAyMTQxNzA4OH0.zr7v1hbvkSBfz7wLTVU7J2g3NUAwAmLgHNuNdG7jULw';
+const supabaseURL   = 'https://bpcxexhrudktyrkkekne.supabase.co';
+
+final supabase = Supabase.instance.client;
+
+void main() async {  
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: supabaseURL,
+    anonKey: publicAnonKey,
+  );
   runApp(OpenAAC());
 }
 
 class OpenAAC extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AppState(),
-      child: MaterialApp(
-        title: 'Open AAC',
-        theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+    return MaterialApp(
+      title: 'Learningo Open AAC',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.green,
           ),
-        home: HomePage(title: 'Open AAC'),
-        debugShowCheckedModeBanner: false,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.green,
+          ),
+        ),
       ),
+
+      initialRoute: '/',
+      routes: <String, WidgetBuilder>{
+        '/': (_) => const SplashPage(),
+        '/login': (_) => const LoginPage(),
+        '/account': (_) => const AccountPage(),
+      },
     );
   }
 }
 
-class AppState extends ChangeNotifier {
-  List<ai.Mapping> mappings = [];
-  bool isLoading = false;
 
-  void checkText(var text) {
-    ai.lookup(text).then((mappings) {
-      this.mappings = mappings;
-      this.isLoading = false;
-      notifyListeners();
-    }).onError((error, stackTrace) {
-      print(error);
-      this.isLoading = false;
-      notifyListeners();
-    });
-  }
-
-  void setLoading(bool isLoading) {
-    this.isLoading = isLoading;
-    notifyListeners();
-  }
-}
-
-class HomePage extends StatefulWidget {
-  HomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  // Create a text controller and use it to retrieve the current value
-  // of the TextField.
-  final textController = TextEditingController();
-  final tts.AppTts appTts = tts.AppTts();
-
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    textController.dispose();
-    appTts.stop();
-    super.dispose();
-  }
-
-  @override
-  initState() {
-    super.initState();
-    appTts.initTts();
-  }
-
-  void _onTileClicked(String word){
-    appTts.flutterTts.speak(word);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<AppState>();
-
-    if (appState.isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    } else {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-            actions: <Widget>[
-              IconButton(
-                icon: const Icon(Icons.settings),
-                tooltip: 'App settings',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SettingsPage()),
-                  );
-                },
-              ),
-            ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            appState.setLoading(true);
-            appState.checkText(textController.text);
-          },
-          tooltip: 'Convert text to icons',
-          child: Icon(Icons.search),
-        ),
-        body: Column(
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: TextField(
-                    controller: textController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Enter text to convert to icons',
-                    ),
-                    onSubmitted: (text) {
-                      appState.setLoading(true);
-                      appState.checkText(text);
-                    },
-                  ),
-                ),
-                SizedBox(width: 10),
-                IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    appState.setLoading(false);
-                    textController.clear();
-                    appState.checkText("");
-                  },
-                  tooltip: 'Clear',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.record_voice_over),
-                  onPressed: () {
-                    if (textController.text.isNotEmpty) {
-                      appTts.flutterTts.speak(textController.text);
-                    }
-                  },
-                  tooltip: 'Clear',
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                padding: const EdgeInsets.symmetric(vertical: 1),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: 164 * ((context.read<AppState>().mappings.length / 2) + 1),
-                  child: Wrap(
-                    alignment: WrapAlignment.spaceEvenly,
-                    spacing:1,
-                    runSpacing: 1,
-                    direction: Axis.horizontal,
-                    children: context.read<AppState>().mappings.map((item) {
-                      if (item.poorMatch) {
-                        Image overlay = Image.memory(item.generatedImage);
-                        Image blank = Image.asset("assets/${ai.blankTilePath}");
-                        return InkResponse(
-                          onTap: () => _onTileClicked(item.word),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Positioned.fill(
-                                child: 
-                                  Align(
-                                    alignment: Alignment.topCenter,
-                                    widthFactor: 2.5,
-                                    heightFactor: 1.2,
-                                    child: Text(
-                                      item.word,
-                                      overflow: TextOverflow.fade,
-                                      softWrap: false,
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold
-                                      ),
-                                    ),
-                                  ),
-                              ),
-                              Positioned(
-                                top: 26,
-                                width: blank.width,
-                                height: blank.height,
-                                child: overlay,
-                              ),
-                              blank, // Blank background has transparency to display above
-                            ],
-                          ),
-                        );
-                      } else {
-                        return Column(
-                          children: [
-                            InkResponse(
-                              onTap: () => _onTileClicked(item.word),
-                              child: Image.asset("assets/${item.imagePath}")
-                            ),
-                          ],
-                        );
-                      }
-                    },
-                  ).toList(),
-                ),
-              ),
-            ),
-          ),
-          ],
-        ),
-      );
-    }
-  }
-}

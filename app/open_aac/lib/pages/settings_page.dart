@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'ai.dart' as ai;
+import '../ai.dart' as ai;
 
 const String imageCachePrefix = "images/";
 

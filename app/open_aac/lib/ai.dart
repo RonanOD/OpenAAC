@@ -61,18 +61,22 @@ Future<List<Mapping>> lookupSupabase(String text) async {
       );
 
       print("word $word => Status: ${response.status} Initial: ${response.data}");
-      if (response.status == 200 && response.data.length > 0) {
+      if (response.status == 200) {
         Mapping mapping;
-        final match = response.data[0];
-        final similarity = match['similarity'].toString();
-        
-        if (double.parse(similarity) < vectorMatchThreshold) {
-          print("poor match for $word. Attempting image generation.");
-          mapping = await _generateImage(word);
+        if (response.data.length > 0) {
+          final match = response.data[0];
+          final similarity = match['similarity'].toString();
+          if (double.parse(similarity) < vectorMatchThreshold) {
+            print("poor match for $word. Attempting image generation.");
+            mapping = await _generateImage(word);
+          } else {
+            var imagePath = match['path'];
+            print("word $word => $imagePath");
+            mapping = Mapping(word, imagePath, false);
+          }
         } else {
-          var imagePath = match['path'];
-          print("word $word => $imagePath");
-          mapping = Mapping(word, imagePath, false);
+          print("No match for $word. Attempting image generation.");
+          mapping = await _generateImage(word);
         }
         mappings.add(mapping);
       }

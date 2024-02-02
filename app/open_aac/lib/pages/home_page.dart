@@ -134,6 +134,7 @@ class _HomePageState extends State<HomePage> {
                     setState(() {
                       _isLoading = false;
                     });
+                    textController.clear();
                     _checkText("");
                   },
                   tooltip: 'Clear',

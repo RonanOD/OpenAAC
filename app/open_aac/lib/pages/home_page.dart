@@ -1,48 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
-import 'package:openaac/pages/settings_page.dart';
+import 'package:openaac/pages/account_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:openaac/ai.dart' as ai;
 import 'package:openaac/tts.dart' as tts;
 
-/* PREVIOUS build method in main.dart
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AppState(),
-      child: MaterialApp(
-        title: 'Open AAC',
-        home: HomePage(title: 'Open AAC'),
-      ),
-    );
-  }
- */
-
-class AppState extends ChangeNotifier {
-  List<ai.Mapping> mappings = [];
-  bool isLoading = false;
-
-  void checkText(var text) {
-    ai.lookup(text).then((mappings) {
-      this.mappings = mappings;
-      this.isLoading = false;
-      notifyListeners();
-    }).onError((error, stackTrace) {
-      print(error);
-      this.isLoading = false;
-      notifyListeners();
-    });
-  }
-
-  void setLoading(bool isLoading) {
-    this.isLoading = isLoading;
-    notifyListeners();
-  }
-}
-
 class HomePage extends StatefulWidget {
-  HomePage({super.key, required this.title});
-
+  const HomePage({super.key, required this.title});
   final String title;
 
   @override
@@ -50,10 +13,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool _isLoading = false;
   // Create a text controller and use it to retrieve the current value
   // of the TextField.
   final textController = TextEditingController();
   final tts.AppTts appTts = tts.AppTts();
+  List<ai.Mapping> mappings = [];
 
   @override
   void dispose() {
@@ -73,11 +38,41 @@ class _HomePageState extends State<HomePage> {
     appTts.flutterTts.speak(word);
   }
 
+  void _checkText(var text) {
+    ai.lookupSupabase(text).then((mappings) {
+      this.mappings = mappings;
+      setState(() {
+        _isLoading = false;
+      });
+    }).onError((error, stackTrace) {
+      print(error);
+      setState(() {
+        _isLoading = false;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<AppState>();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Learningo Open AAC"),
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: Image.asset('assets/images/_app/logo.png'),
+              onPressed: () { _launchSite(); },
+              tooltip: "Open Learningo Homepage",
+            );
+          },
+        ),
+      ),
+      body: _buildHome(context,)
+    );
+  }
 
-    if (appState.isLoading) {
+  Widget? _buildHome(BuildContext context) {
+    if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
@@ -93,11 +88,11 @@ class _HomePageState extends State<HomePage> {
             actions: <Widget>[
               IconButton(
                 icon: const Icon(Icons.settings),
-                tooltip: 'App settings',
+                tooltip: 'Settings',
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => SettingsPage()),
+                    MaterialPageRoute(builder: (context) => AccountPage()),
                   );
                 },
               ),
@@ -105,8 +100,10 @@ class _HomePageState extends State<HomePage> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            appState.setLoading(true);
-            appState.checkText(textController.text);
+            setState(() {
+              _isLoading = true;
+            });
+            _checkText(textController.text);
           },
           tooltip: 'Convert text to icons',
           child: Icon(Icons.search),
@@ -123,8 +120,10 @@ class _HomePageState extends State<HomePage> {
                       hintText: 'Enter text to convert to icons',
                     ),
                     onSubmitted: (text) {
-                      appState.setLoading(true);
-                      appState.checkText(text);
+                      setState(() {
+                        _isLoading = true;
+                      });
+                      _checkText(textController.text);
                     },
                   ),
                 ),
@@ -132,9 +131,10 @@ class _HomePageState extends State<HomePage> {
                 IconButton(
                   icon: const Icon(Icons.clear),
                   onPressed: () {
-                    appState.setLoading(false);
-                    textController.clear();
-                    appState.checkText("");
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    _checkText("");
                   },
                   tooltip: 'Clear',
                 ),
@@ -156,13 +156,13 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(vertical: 1),
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width,
-                  height: 164 * ((context.read<AppState>().mappings.length / 2) + 1),
+                  height: 164 * ((mappings.length / 2) + 1),
                   child: Wrap(
                     alignment: WrapAlignment.spaceEvenly,
                     spacing:1,
                     runSpacing: 1,
                     direction: Axis.horizontal,
-                    children: context.read<AppState>().mappings.map((item) {
+                    children: mappings.map((item) {
                       if (item.poorMatch) {
                         Image overlay = Image.memory(item.generatedImage);
                         Image blank = Image.asset("assets/${ai.blankTilePath}");
@@ -218,6 +218,13 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       );
+    }
+  }
+
+  void _launchSite() async {
+    final Uri url = Uri.parse('https://learningo.org');
+    if (!await launchUrl(url)) {
+      throw Exception('Could not launch $url');
     }
   }
 }

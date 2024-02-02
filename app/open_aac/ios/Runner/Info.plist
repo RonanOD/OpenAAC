@@ -52,7 +52,7 @@
       <string>Editor</string>
       <key>CFBundleURLSchemes</key>
       <array>
-        <string>org.learningo</string>
+        <string>io.supabase.flutterquickstart</string>
       </array>
     </dict>
   </array>

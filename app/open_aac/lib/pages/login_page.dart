@@ -61,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
       final session = data.session;
       if (session != null) {
         _redirecting = true;
-        Navigator.of(context).pushReplacementNamed('/account');
+        Navigator.of(context).pushReplacementNamed('/home');
       }
     });
     super.initState();
@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
           builder: (BuildContext context) {
             return IconButton(
               icon: Image.asset('assets/images/_app/logo.png'),
-              onPressed: () { _launchHomepage(); },
+              onPressed: () { _launchSite(); },
               tooltip: "Open Learningo Homepage",
             );
           },
@@ -108,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _launchHomepage() async {
+  void _launchSite() async {
    final Uri url = Uri.parse('https://learningo.org');
    if (!await launchUrl(url)) {
         throw Exception('Could not launch $url');

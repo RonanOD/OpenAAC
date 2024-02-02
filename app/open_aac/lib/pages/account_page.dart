@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:openaac/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../ai.dart' as ai;
+
+const String imageCachePrefix = "images/";
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -12,8 +16,24 @@ class AccountPage extends StatefulWidget {
 class _AccountPageState extends State<AccountPage> {
   final _usernameController = TextEditingController();
   final _websiteController = TextEditingController();
+  final _openAIController = TextEditingController();
 
   var _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _getProfile();
+    _loadPreferences();
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _websiteController.dispose();
+    _openAIController.dispose();
+    super.dispose();
+  }
 
   /// Called once a user id is received within `onAuthenticated()`
   Future<void> _getProfile() async {
@@ -106,17 +126,26 @@ class _AccountPageState extends State<AccountPage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _getProfile();
+  _loadPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _openAIController.text = prefs.getString('openAIKey') ?? '';
   }
 
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _websiteController.dispose();
-    super.dispose();
+  _savePreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('openAIKey', _openAIController.text);
+    // Reset the config map
+    ai.config = { };
+  }
+
+  _clearImagesCache() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys();
+    for (var key in keys) {
+      if (key.startsWith(imageCachePrefix)) {
+        prefs.remove(key);
+      }
+    }
   }
 
   @override
@@ -144,6 +173,36 @@ class _AccountPageState extends State<AccountPage> {
                 ),
                 const SizedBox(height: 18),
                 TextButton(onPressed: _signOut, child: const Text('Sign Out')),
+                const SizedBox(height: 20),
+                SizedBox(
+                  child: Text('Images Cache',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  )
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    _clearImagesCache();
+                  },
+                  child: Text('Clear Cache'),
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _openAIController,
+                  decoration: InputDecoration(
+                    labelText: 'OpenAI Api Key',
+                    contentPadding: EdgeInsets.only(bottom: 1.0)),
+                ),
+                SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    _savePreferences();
+                  },
+                  child: Text('Save'),
+                ),
               ],
             ),
     );

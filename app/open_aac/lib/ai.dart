@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:langchain_openai/langchain_openai.dart' show OpenAIEmbeddings;
 import 'package:pinecone/pinecone.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:image/image.dart' as img;
@@ -35,8 +36,54 @@ class Mapping {
   Uint8List get generatedImage => _generatedImage!;
 }
 
-// Perform a lookup on the current text using the AI engine
-Future<List<Mapping>> lookup(String text) async {
+// Perform a lookup on the current text using Supabase
+Future<List<Mapping>> lookupSupabase(String text) async {
+  List<Mapping> mappings = [];
+
+  if (text.isNotEmpty && await _checkConfig()) {
+    // Access Supabase client
+    final sbClient = Supabase.instance.client;
+
+    print("text to lookup: $text");
+    // Split the text into a list of words
+    List<String> words = text.split(' ');
+    for (var word in words) {
+      word = word.replaceAll(RegExp(r"[^A-Za-z0-9']"), ""); // Strip out anything not alphanumeric preserving apostrophes
+      if (word.isEmpty || word == '') {
+        continue;
+      }
+      
+      final response = await sbClient.functions.invoke(
+        "getImages", 
+        body: {'words': word},
+        headers: {'Authorization': "Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}",
+          'Content-Type': 'application/json'}
+      );
+
+      print("word $word => Status: ${response.status} Initial: ${response.data}");
+      if (response.status == 200 && response.data.length > 0) {
+        Mapping mapping;
+        final match = response.data[0];
+        final similarity = match['similarity'].toString();
+        
+        if (double.parse(similarity) < vectorMatchThreshold) {
+          print("poor match for $word. Attempting image generation.");
+          mapping = await _generateImage(word);
+        } else {
+          var imagePath = match['path'];
+          print("word $word => $imagePath");
+          mapping = Mapping(word, imagePath, false);
+        }
+        mappings.add(mapping);
+      }
+      //TODO: Add error messaging
+    }
+  }
+  return mappings;
+}
+
+// Perform a lookup on the current text using Pinecone
+Future<List<Mapping>> lookupPinecone(String text) async {
   List<Mapping> mappings = [];
   if (text.isNotEmpty && await _checkConfig()) {
     // Create Pinecone client
@@ -140,31 +187,10 @@ Future<bool> _checkConfig() async {
   if (config.isEmpty) {
     // Load config from shared preferences and check for required keys
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    config['openAIApiKey']      = prefs.getString('openAIKey');
-    config['pineconeApiKey']    = prefs.getString('pineconeKey');
-    config['pineconeEnv']       = prefs.getString('pineconeEnv');
-    config['pineconeProjectID'] = prefs.getString('pineconeProjectID');
-    
+    config['openAIApiKey']  = prefs.getString('openAIKey');
+    // TODO: Move DALLE-gen to Edge function
     if (config['openAIApiKey'] == null) {
       print('OPENAI_API_KEY environment variable not set');
-      return false;
-    }
-
-    // Get PINECONE_API_KEY from environment variable: https://docs.pinecone.io/docs/projects#api-keys
-    if (config['pineconeApiKey'] == null) {
-      print('PINECONE_API_KEY environment variable not set');
-      return false;
-    }
-
-    // Get PINECONE_ENV from environment variable: https://docs.pinecone.io/docs/projects#project-environment
-    if (config['pineconeEnv'] == null) {
-      print('PINECONE_ENV environment variable not set');
-      return false;
-    }
-
-    // Get PINECONE_PROJECT_ID from environment variable: https://docs.pinecone.io/docs/projects#project-id
-    if (config['pineconeProjectID'] == null) {
-      print('PINECONE_PROJECT_ID environment variable not set');
       return false;
     }
 

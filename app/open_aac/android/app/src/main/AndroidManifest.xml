@@ -36,7 +36,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <!-- Accepts URIs that begin with YOUR_SCHEME://YOUR_HOST -->
                 <data
-                android:scheme="org.learningo"
+                android:scheme="io.supabase.flutterquickstart"
                 android:host="login-callback" />
             </intent-filter>
         </activity>

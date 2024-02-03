@@ -5,8 +5,7 @@ import 'package:openaac/ai.dart' as ai;
 import 'package:openaac/tts.dart' as tts;
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
-  final String title;
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -66,6 +65,18 @@ class _HomePageState extends State<HomePage> {
             );
           },
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AccountPage()),
+              );
+            },
+          ),
+        ]
       ),
       body: _buildHome(context,)
     );
@@ -74,30 +85,12 @@ class _HomePageState extends State<HomePage> {
   Widget? _buildHome(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
         body: Center(
           child: CircularProgressIndicator(),
         ),
       );
     } else {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-            actions: <Widget>[
-              IconButton(
-                icon: const Icon(Icons.settings),
-                tooltip: 'Settings',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => AccountPage()),
-                  );
-                },
-              ),
-            ],
-        ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             setState(() {

@@ -52,35 +52,32 @@ Future<List<Mapping>> lookupSupabase(String text) async {
       if (word.isEmpty || word == '') {
         continue;
       }
-      
-      final response = await sbClient.functions.invoke(
-        "getImages", 
-        body: {'words': word},
-        headers: {'Authorization': "Bearer ${Supabase.instance.client.auth.currentSession?.accessToken}",
-          'Content-Type': 'application/json'}
-      );
-
-      print("word $word => Status: ${response.status} Initial: ${response.data}");
-      if (response.status == 200) {
-        Mapping mapping;
-        if (response.data.length > 0) {
-          final match = response.data[0];
-          final similarity = match['similarity'].toString();
-          if (double.parse(similarity) < vectorMatchThreshold) {
-            print("poor match for $word. Attempting image generation.");
-            mapping = await _generateImage(word);
+      try {
+        final response = await sbClient.functions.invoke("getImages", body: {'words': word});
+        print("word $word => Status: ${response.status} Initial: ${response.data}");
+        if (response.status == 200) {
+          Mapping mapping;
+          if (response.data.length > 0) {
+            final match = response.data[0];
+            final similarity = match['similarity'].toString();
+            if (double.parse(similarity) < vectorMatchThreshold) {
+              print("poor match for $word. Attempting image generation.");
+              mapping = await _generateImage(word);
+            } else {
+              var imagePath = match['path'];
+              print("word $word => $imagePath");
+              mapping = Mapping(word, imagePath, false);
+            }
           } else {
-            var imagePath = match['path'];
-            print("word $word => $imagePath");
-            mapping = Mapping(word, imagePath, false);
+            print("No match for $word. Attempting image generation.");
+            mapping = await _generateImage(word);
           }
-        } else {
-          print("No match for $word. Attempting image generation.");
-          mapping = await _generateImage(word);
+          mappings.add(mapping);
         }
-        mappings.add(mapping);
+      } on FunctionException catch (err) {
+        print("Function Exception : ${err.reasonPhrase}");
+        rethrow;
       }
-      //TODO: Add error messaging
     }
   }
   return mappings;

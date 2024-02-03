@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:openaac/pages/account_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:openaac/ai.dart' as ai;
 import 'package:openaac/tts.dart' as tts;
@@ -37,17 +38,23 @@ class _HomePageState extends State<HomePage> {
     appTts.flutterTts.speak(word);
   }
 
-  void _checkText(var text) {
+  void _checkText(var text, BuildContext context) {
     ai.lookupSupabase(text).then((mappings) {
       this.mappings = mappings;
       setState(() {
         _isLoading = false;
       });
     }).onError((error, stackTrace) {
-      print(error);
       setState(() {
         _isLoading = false;
       });
+
+      if (error is FunctionException) {
+        var fex = error as FunctionException;
+        if (fex.reasonPhrase!.toLowerCase().contains('unauthorized')) {
+          _dialogBuilder(context, "User not allowed. Contact your administrator.");
+        }
+      }
     });
   }
 
@@ -96,7 +103,7 @@ class _HomePageState extends State<HomePage> {
             setState(() {
               _isLoading = true;
             });
-            _checkText(textController.text);
+            _checkText(textController.text, context);
           },
           tooltip: 'Convert text to icons',
           child: Icon(Icons.search),
@@ -116,7 +123,7 @@ class _HomePageState extends State<HomePage> {
                       setState(() {
                         _isLoading = true;
                       });
-                      _checkText(textController.text);
+                      _checkText(textController.text, context);
                     },
                   ),
                 ),
@@ -128,7 +135,7 @@ class _HomePageState extends State<HomePage> {
                       _isLoading = false;
                     });
                     textController.clear();
-                    _checkText("");
+                    _checkText("", context);
                   },
                   tooltip: 'Clear',
                 ),
@@ -221,4 +228,28 @@ class _HomePageState extends State<HomePage> {
       throw Exception('Could not launch $url');
     }
   }
+
+  Future<void> _dialogBuilder(BuildContext context, String msg) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Notice'),
+          content: Text(msg),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
 }

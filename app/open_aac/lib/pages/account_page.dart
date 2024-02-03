@@ -3,8 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:openaac/main.dart';
 import 'package:openaac/components/avatar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../ai.dart' as ai;
-
 
 const String imageCachePrefix = "images/";
 
@@ -18,7 +16,6 @@ class AccountPage extends StatefulWidget {
 class _AccountPageState extends State<AccountPage> {
   final _usernameController = TextEditingController();
   final _websiteController = TextEditingController();
-  final _openAIController = TextEditingController();
 
   String? _avatarUrl;
   var _loading = true;
@@ -27,14 +24,12 @@ class _AccountPageState extends State<AccountPage> {
   void initState() {
     super.initState();
     _getProfile();
-    _loadPreferences();
   }
 
   @override
   void dispose() {
     _usernameController.dispose();
     _websiteController.dispose();
-    _openAIController.dispose();
     super.dispose();
   }
 
@@ -162,17 +157,6 @@ class _AccountPageState extends State<AccountPage> {
     }
   }
 
-  _loadPreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    _openAIController.text = prefs.getString('openAIKey') ?? '';
-  }
-
-  _savePreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('openAIKey', _openAIController.text);
-    // Reset the config map
-    ai.config = { };
-  }
 
   _clearImagesCache() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -228,20 +212,6 @@ class _AccountPageState extends State<AccountPage> {
                     _clearImagesCache();
                   },
                   child: Text('Clear Cache'),
-                ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _openAIController,
-                  decoration: InputDecoration(
-                    labelText: 'OpenAI Api Key',
-                    contentPadding: EdgeInsets.only(bottom: 1.0)),
-                ),
-                SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    _savePreferences();
-                  },
-                  child: Text('Save'),
                 ),
               ],
             ),

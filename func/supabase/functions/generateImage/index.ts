@@ -1,4 +1,4 @@
-// Edge Function to return image path for words matched by vector embedding
+// Generate an image for a word which doesn't have a good match
 
 import OpenAI from 'https://deno.land/x/openai@v4.24.0/mod.ts'
 
@@ -9,13 +9,17 @@ export const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const openAIEmbeddingsModel = 'text-embedding-3-small'
-const vectorMatchThreshold  = 0.78
+export const imageGenPrompt = `Create a simplified image of "XXXX", created only using primary colors 
+on a white background. The design should be minimalistic with no additional 
+details or text. This image should resemble the stylistic approach of icons 
+utilized in an AAC (Augmentative and Alternative Communication) application.`
+
+export const imageGenModel = "dall-e-3";
 
 Deno.serve(async (req) => {
   // Search query is passed in request payload
-  const { words } = await req.json()
-  console.log("Get Images Call: " + words)
+  const { word } = await req.json()
+  console.log("Generate Images Call: " + word)
 
   // Handle CORS if call is from Browser
   if (req.method === 'OPTIONS') {
@@ -33,11 +37,7 @@ Deno.serve(async (req) => {
     )
 
     // Now we can get the session or user object
-    const {
-      data: { user, error },
-    } = await supabaseClient.auth.getUser()
-
-    //const { data, error } = await supabaseClient.from('profiles').select('*')
+    const {data: { user, error }, } = await supabaseClient.auth.getUser()
     if (error) throw error
 
     var grantedAccess = false
@@ -54,7 +54,8 @@ Deno.serve(async (req) => {
     }
 
     // OpenAI recommends replacing newlines with spaces for best results
-    const input = words.replace(/\n/g, ' ')
+    const input = word.replace(/\n/g, ' ')
+    const prompt = imageGenPrompt.replace("XXXX", input)
 
     const apiKey = Deno.env.get('OPENAI_API_KEY')
     const openai = new OpenAI({
@@ -62,32 +63,24 @@ Deno.serve(async (req) => {
     })
 
     // Generate embedding for the query itself
-    const embeddingResponse = await openai.embeddings.create({
-      model: openAIEmbeddingsModel,
-      input,
+    var imgResponse = await openai.images.generate({
+      model: imageGenModel,
+      prompt: prompt,
+      n: 1,
+      size: "1024x1024",
+      style: "vivid",
+      response_format: "b64_json"
     })
 
-    if (embeddingResponse.data && embeddingResponse.data.length > 0) {
-      const responseData = embeddingResponse.data[0]['embedding']
-      const { data, error } = await supabaseClient.rpc('match_images', {
-          match_count: 1, // Choose the number of matches
-          match_threshold: vectorMatchThreshold, // Choose an appropriate threshold for your data
-          query_embedding: responseData,
-      })
+    if (imgResponse.data && imgResponse.data.length > 0) {
+        const responseData = imgResponse.data[0]['b64_json']
 
-      if (error != null) {
-        return new Response(JSON.stringify(error), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500
-        })
-      } else {
-        return new Response(JSON.stringify(data), {
+        return new Response(JSON.stringify(responseData), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200
         })
-      }
     } else {
-      return new Response('ERROR: No embeddings returned', { status: 404, headers: corsHeaders })
+      return new Response('ERROR: No image returned', { status: 404, headers: corsHeaders })
     }
   } catch (error) {
     console.log("ERR: " + error.message)
@@ -97,15 +90,3 @@ Deno.serve(async (req) => {
     })
   }
 })
-
-/* To invoke locally:
-
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/getImages' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
-*/

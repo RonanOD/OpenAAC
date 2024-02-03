@@ -12,9 +12,6 @@ const String blankTilePath = 'images/_app/blank.png';
 const double vectorMatchThreshold = 0.92;
 const String imageCachePrefix = "images/";
 
-// Config Map
-var config = { };
-
 class Mapping {
   final String word;
   final bool poorMatch;

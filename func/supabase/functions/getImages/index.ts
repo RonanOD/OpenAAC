@@ -33,20 +33,24 @@ Deno.serve(async (req) => {
 
     // Now we can get the session or user object
     const {
-      data: { user },
+      data: { user, error },
     } = await supabaseClient.auth.getUser()
 
-    const { data, error } = await supabaseClient.from('profiles').select('*')
+    //const { data, error } = await supabaseClient.from('profiles').select('*')
     if (error) throw error
 
+    var grantedAccess = false
+    if (user['user_metadata'] != null && user['user_metadata']['can_access'] != null) {
+      grantedAccess = user['user_metadata']['can_access']
+    }
+
     // Gate only users with learningo emails or explicit access
-    if (!user['email'].endsWith("@learningo.org") && !data[0]['can_access']) {
+    if (!(user['email'].endsWith("@learningo.org") || grantedAccess)) {
       return new Response(JSON.stringify({ error: "Not allowed" }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 401,
       })
     }
-
 
     // OpenAI recommends replacing newlines with spaces for best results
     const input = words.replace(/\n/g, ' ')

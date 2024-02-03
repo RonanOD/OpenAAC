@@ -9,59 +9,87 @@ export const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const openAIEmbeddingsModel = 'text-embedding-3-small'
+
 Deno.serve(async (req) => {
   // Search query is passed in request payload
   const { words } = await req.json()
   console.log("Get Images Call: " + words)
 
-  // Handle CORS
+  // Handle CORS if call is from Browser
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  // Init Supabase client
-  const authHeader = req.headers.get('Authorization')!
-  const supabaseClient = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    { global: { headers: { Authorization: authHeader } } }
-  )
+  try{
+    // Init Supabase client with the Auth context of the logged in user
+    const authHeader = req.headers.get('Authorization')!
+    
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    )
 
-  // OpenAI recommends replacing newlines with spaces for best results
-  const input = words.replace(/\n/g, ' ')
+    // Now we can get the session or user object
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser()
 
-  const apiKey = Deno.env.get('OPENAI_API_KEY')
-  const openai = new OpenAI({
-    apiKey: apiKey,
-  })
+    const { data, error } = await supabaseClient.from('profiles').select('*')
+    if (error) throw error
 
-  // Generate embedding for the query itself
-  const embeddingResponse = await openai.embeddings.create({
-    model: 'text-embedding-3-small',
-    input,
-  })
-
-  if (embeddingResponse.data && embeddingResponse.data.length > 0) {
-    const responseData = embeddingResponse.data[0]['embedding']
-    const { data, error } = await supabaseClient.rpc('match_images', {
-        match_count: 1, // Choose the number of matches
-        match_threshold: 0.78, // Choose an appropriate threshold for your data
-        query_embedding: responseData,
-    })
-
-    if (error != null) {
-      return new Response(JSON.stringify(error), {
+    // Gate only users with learningo emails or explicit access
+    if (!user['email'].endsWith("@learningo.org") && !data[0]['can_access']) {
+      return new Response(JSON.stringify({ error: "Not allowed" }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      })
-    } else {
-      return new Response(JSON.stringify(data), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
+        status: 401,
       })
     }
-  } else {
-    return new Response('ERROR: No embeddings returned', { status: 404, headers: corsHeaders })
+
+
+    // OpenAI recommends replacing newlines with spaces for best results
+    const input = words.replace(/\n/g, ' ')
+
+    const apiKey = Deno.env.get('OPENAI_API_KEY')
+    const openai = new OpenAI({
+      apiKey: apiKey,
+    })
+
+    // Generate embedding for the query itself
+    const embeddingResponse = await openai.embeddings.create({
+      model: openAIEmbeddingsModel,
+      input,
+    })
+
+    if (embeddingResponse.data && embeddingResponse.data.length > 0) {
+      const responseData = embeddingResponse.data[0]['embedding']
+      const { data, error } = await supabaseClient.rpc('match_images', {
+          match_count: 1, // Choose the number of matches
+          match_threshold: 0.78, // Choose an appropriate threshold for your data
+          query_embedding: responseData,
+      })
+
+      if (error != null) {
+        return new Response(JSON.stringify(error), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500
+        })
+      } else {
+        return new Response(JSON.stringify(data), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
+        })
+      }
+    } else {
+      return new Response('ERROR: No embeddings returned', { status: 404, headers: corsHeaders })
+    }
+  } catch (error) {
+    console.log("ERR: " + error.message)
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 400,
+    })
   }
 })
 

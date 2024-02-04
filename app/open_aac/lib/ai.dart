@@ -9,7 +9,7 @@ const String modelName = 'text-embedding-ada-002';
 const String pcIndex   = 'openaac-embeddings';
 const String namespace = 'openaac-images';
 const String blankTilePath = 'images/_app/blank.png';
-const double vectorMatchThreshold = 0.92;
+const double vectorMatchThreshold = 0.78;
 const String imageCachePrefix = "images/";
 
 class Mapping {

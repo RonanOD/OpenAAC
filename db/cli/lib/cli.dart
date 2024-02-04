@@ -316,7 +316,7 @@ List<String> getImages(String path) {
   
   List contents = dir.listSync();
   for (var fileOrDir in contents) {
-    if (fileOrDir is File) {
+    if (fileOrDir is File && !fileOrDir.path.contains(".DS_Store")) {
       files.add(fileOrDir.path);
     } 
   }
@@ -402,3 +402,31 @@ Future<UpsertResponse> upsertEmbeddings(
     );
 }
 
+// Load images from a directory and upload them to Supabase
+void loadSupabaseStorage(String path) async {
+  if (!checkConfig(false)) {
+    return;
+  }
+  
+  // Create Supabase Client
+  final supabaseClient = SupabaseClient(config['supabaseURL']!, config['supabaseAnonKey']!);
+
+  List<String> images = getImages(path);
+  print("Got ${images.length} files to process.");
+  int count = 0;
+
+  for (var i = 0; i < images.length; i++) {
+    print("File: ${images[i]}");
+    final imageFile = File(images[i]);
+    final String path = await supabaseClient.storage.from('images')
+      .upload(images[i], 
+      imageFile,
+      fileOptions: FileOptions());
+    print("Uploaded to images as $path");
+    count++;
+  }
+
+  print("Inserted $count files.");
+  
+  exit(0); // Need explicit exit as Supabase client thread seems to persist
+}

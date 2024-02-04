@@ -1,0 +1,24 @@
+{
+    "folders": [
+      {
+        "name": "project-root",
+        "path": "./"
+      },
+      {
+        "name": "flutter-client",
+        "path": "app/open_aac"
+      },
+      {
+        "name": "supabase-functions",
+        "path": "func/supabase/functions"
+      }
+    ],
+    "settings": {
+      "files.exclude": {
+        "flutter/": true,
+        "app/": true,
+        "func/supabase/functions/": true
+      },
+      "deno.importMap": "./func/supabase/functions/import_map.json"
+    }
+  }

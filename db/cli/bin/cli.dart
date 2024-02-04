@@ -2,9 +2,10 @@ import 'package:cli/cli.dart' as cli;
 import 'package:args/args.dart' show ArgParser;
 
 const String pineconePath = 'pinecone_path';
-const String supabasePath = 'supabase_path';
 const String testPinecone = 'test_pinecone';
+const String supabasePath = 'supabase_path';
 const String testSupabase = 'test_supabase';
+const String supabaseS3   = 'supabase_S3';
 
 // The main() function is the entry point of the application
 // Run the application with: dart bin/cli.dart <path>
@@ -15,6 +16,7 @@ void main(List<String> args) async {
   parser.addFlag(testPinecone,   abbr: 'i', help: 'Input strings to test Pinecone embeddings');
   parser.addOption(supabasePath, abbr: 's', help: 'Path to images to upload to Supabase');
   parser.addFlag(testSupabase,   abbr: 'u', help: 'Input strings to test Supabase embeddings');
+  parser.addOption(supabaseS3,   abbr: 't', help: 'Path to images to upload to Supabase Storage');
 
   var inputs = parser.parse(args);
 
@@ -30,6 +32,9 @@ void main(List<String> args) async {
   } else if (inputs[testSupabase] == true) {
     print('Testing Supabase embeddings');
     cli.runTextTest(false);
+  } else if (inputs[supabaseS3] != null) {
+    print('Loading images to Supabase Storage from folder: ${inputs[supabaseS3]}');
+    cli.loadSupabaseStorage(inputs[supabaseS3]);
   } else {
     print('Utility to load and test images in an embeddings database');
     print(parser.usage);

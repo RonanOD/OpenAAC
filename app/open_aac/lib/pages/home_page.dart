@@ -205,7 +205,7 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             InkResponse(
                               onTap: () => _onTileClicked(item.word),
-                              child: Image.asset("assets/${item.imagePath}")
+                              child: Image.memory(item.generatedImage),
                             ),
                           ],
                         );

@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
           status: 500
         })
       } else {
-        // TODO: Figure out why this doesn't work
+        // TODO: Figure out why this doesn't work. We can remove auth perm to images if get working
         // Create a signed URL of the private image
         /*if (data.length == 1) {
           const path = data[0]['path']

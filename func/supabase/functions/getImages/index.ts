@@ -81,6 +81,13 @@ Deno.serve(async (req) => {
           status: 500
         })
       } else {
+        // TODO: Figure out why this doesn't work. We can remove auth perm to images if get working
+        // Create a signed URL of the private image
+        /*if (data.length == 1) {
+          const path = data[0]['path']
+          console.log("PATH: " + path)
+          signImage(path)
+        }*/
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200
@@ -97,15 +104,22 @@ Deno.serve(async (req) => {
     })
   }
 })
+/*
+function signImage(path) {
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    {auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  );
 
-/* To invoke locally:
+  const { data, error } = supabase.storage
+  .from('images')
+  .createSignedUrl(path, 3600)
 
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/getImages' \
-    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
+  console.log("XXX data: " + JSON.stringify(data) + " err " + JSON.stringify(error))
+}
 */

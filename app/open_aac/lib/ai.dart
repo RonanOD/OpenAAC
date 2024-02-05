@@ -54,7 +54,13 @@ Future<List<Mapping>> lookupSupabase(String text) async {
             } else {
               var imagePath = match['path'];
               print("word $word => $imagePath");
+              final imageBytes = await sbClient.storage.from('images').download(imagePath);
+              /*final tempDir = await getTemporaryDirectory();
+              File file = await File('${tempDir.path}/image.png').create();
+              file.writeAsBytesSync(imageBytes);
+              mapping.imagePath = '${tempDir.path}/image.png';*/
               mapping = Mapping(word, imagePath, false);
+              mapping.generatedImage = imageBytes;
             }
           } else {
             print("No match for $word. Attempting image generation.");

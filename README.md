@@ -33,7 +33,7 @@ AI is a powerful tool. I hope this project can help people communicate better.
    * Free download of the Speak4Yourself AAC symbols here: https://smartysymbols.com/download/free-speak-for-yourself-printable/
 
 ## Architecture
-The alpha version of the flutter app connected directly to OpenAI and a Pinecone database. Unfortunately, this approach does not scale to a pool of larger users. The  diagram below illustrates how the app can connect to a vector-enabled Postgres database hosted on [Supabase](https://supabase.com/). Supabase is an exciting platform with a lot of benefits for this project, including serverless Edge functions for connecting to a vector-enabled [Postgres](https://www.postgresql.org/) database. The following illustrates the flow when a user enters their text, to retrieval and presentation of the OpenAAC images.
+The alpha version of the flutter app connected directly to OpenAI and a Pinecone database. Unfortunately, this approach does not scale to a pool of larger users. The diagram below illustrates how the beta app connects to a vector-enabled Postgres database hosted on [Supabase](https://supabase.com/). Supabase is an exciting platform with a lot of benefits for this project, including serverless Edge functions for connecting to a vector-enabled [Postgres](https://www.postgresql.org/) database and OpenAI image generation. Supabase also provides a robust authentication mechanism, along with S3 storage of icon images. The following illustrates the flow when a user enters their text, to retrieval and presentation of the OpenAAC images.
 
 ![OpenAAC Image Lookup Flow](docs/OpenAAC_Image_Lookup_Flow.png?raw=true)
 
@@ -44,20 +44,20 @@ Beginning with the Flutter client app, the details of the flow are as follows:
  1. The Edge function converts each word to an embedding using the OpenAI embedding service.
  1. The Edge function takes the embedding vector and call a Postgres function.
  1. This function runs a cosine similiarity match against the Images table.
-    * Call [OpenAI DALL-E 3](https://openai.com/dall-e-3) generation when there isn't a good match for the word.
+    * A separate edge function calls [OpenAI DALL-E 3](https://openai.com/dall-e-3) generation when there isn't a good match for the word.
  1. The app will call Supabase Storage for the images which can be cached locally
 
 ## Technology Stack
  * [Flutter](https://flutter.dev/): Cross platform mobile app framework
- * [Supabase](https://supabase.com/)
- * [Postgres](https://www.postgresql.org/)
- * [Pinecone](https://pub.dev/packages/pinecone): Pinecone vector database
+ * [Supabase](https://supabase.com/): Open source cloud provider
+ * [Postgres](https://www.postgresql.org/): Open source database (with [pgvector](https://github.com/pgvector/pgvector/) support)
+ * [Pinecone](https://pub.dev/packages/pinecone): Pinecone vector database (deprecated)
  * [Langchain](https://pub.dev/packages/langchain): LangChain provides a set of ready-to-use components for working with language models and the concept of chains, which allows to "chain" components together to formulate more advanced use cases around LLMs.
  * [OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings): OpenAI’s text embeddings measure the relatedness of text strings
  * [OpenAI DALL-E 3](https://openai.com/dall-e-3)
 
  ## Installation
- Details on app availability and sign-up will be posted here soon.
+ Details on app availability (Android and iOS) and sign-up will be posted here soon.
 
  ## Installation (Deprecated)
   1. Install Flutter: https://flutter.dev/docs/get-started/install
@@ -83,7 +83,7 @@ Beginning with the Flutter client app, the details of the flow are as follows:
 ## Future Goals
  * ~~A local cache of words to images to cut down on API calls~~
  * ~~Use a Large Language Model (Dalle-3) to generate symbols when there are low confidence matches in the vector DB.~~
- * Full Supabase integration
+ * ~~Full Supabase integration~~
  * Make freely available on the Google Play Store and Apple App Store
  * Better integration with other AAC symbol sets
  * Allow users to upload their own custom symbols

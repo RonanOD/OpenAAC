@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:openaac/main.dart';
 import 'package:openaac/components/avatar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 const String imageCachePrefix = "images/";
 
@@ -159,13 +159,7 @@ class _AccountPageState extends State<AccountPage> {
 
 
   _clearImagesCache() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final keys = prefs.getKeys();
-    for (var key in keys) {
-      if (key.startsWith(imageCachePrefix)) {
-        prefs.remove(key);
-      }
-    }
+    DefaultCacheManager().emptyCache();
   }
 
   @override

@@ -6,7 +6,7 @@
         </intent>
     </queries>
     <application
-        android:label="open_aac"
+        android:label="Open AAC"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

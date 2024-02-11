@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "61771573616",
+    "project_id": "openaac-411413",
+    "storage_bucket": "openaac-411413.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:61771573616:android:7c950187a53fe86abb87b5",
+        "android_client_info": {
+          "package_name": "org.learningo.openaac"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "61771573616-bdr4sgua9dvq0rln8hf9ofla9qpa73dv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDF1KqVWvak5Pjy4BUM5S3kAPqokfNx92M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "61771573616-bdr4sgua9dvq0rln8hf9ofla9qpa73dv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

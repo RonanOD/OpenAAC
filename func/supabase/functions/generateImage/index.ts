@@ -9,12 +9,13 @@ export const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-export const imageGenPrompt = `Create a simplified image of "XXXX", created only using primary colors 
-on a white background. The design should be minimalistic with no additional 
-details or text. This image should resemble the stylistic approach of icons 
-utilized in an AAC (Augmentative and Alternative Communication) application.`
+export const imageGenPrompt = `Create a simplified image that is an icon representing "XXXX".
+Use only primary colors on a white background. The design is 
+minimalist with no additional detail. Do not use any character or typography on the image.
+This image should resemble the stylistic approach of icons utilized in an 
+AAC (Augmentative and Alternative Communication) application.`
 
-export const imageGenModel = "dall-e-3";
+export const imageGenModel = "dall-e-2";
 
 Deno.serve(async (req) => {
   // Search query is passed in request payload
@@ -67,8 +68,7 @@ Deno.serve(async (req) => {
       model: imageGenModel,
       prompt: prompt,
       n: 1,
-      size: "1024x1024",
-      style: "vivid",
+      size: "512x512",
       response_format: "b64_json"
     })
 

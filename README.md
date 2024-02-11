@@ -1,7 +1,5 @@
 # Open Augmentative and Alternative Communication App
 
-![OpenAAC App](docs/lets_speak.png?raw=true)
-
 AI can be used to help people communicate!
 
 This project uses [OpenAI Vector embeddings](https://platform.openai.com/docs/guides/embeddings) to translate a user's text/speech into easy to understand [AAC](https://www.asha.org/public/speech/disorders/aac/) symbols. The OpenAAC app uses OpenAI to match symbols to text to convert natural language to AAC pictograms.
@@ -13,7 +11,12 @@ This project uses [OpenAI Vector embeddings](https://platform.openai.com/docs/gu
 
 The goal is to assist in communication between neurotypical and nonneurotypical users via mobile devices.
 
-[![Open AAC Demo](https://img.youtube.com/vi/0Lx7t2MB3DI/0.jpg)](https://youtu.be/0Lx7t2MB3DI)
+[![Open AAC Demo](https://img.youtube.com/vi/prk7yOf5zJI/0.jpg)](https://youtu.be/prk7yOf5zJI)
+
+# App Images
+<img src="docs/lets_speak.jpg" width="30%"></img>
+<img src="docs/generated_image.jpg" width="30%"></img>
+<img src="docs/settings.jpg" width="30%"></img>
 
 # Background
 My name is [Ronan O'Driscoll](https://ronanodriscoll.com/). I am a software developer with an autistic son. Through therapy and assisted communication tools, his ability to communicate has improved considerably from when he was largely non-verbal. 

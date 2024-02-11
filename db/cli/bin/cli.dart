@@ -6,6 +6,7 @@ const String testPinecone = 'test_pinecone';
 const String supabasePath = 'supabase_path';
 const String testSupabase = 'test_supabase';
 const String supabaseS3   = 'supabase_S3';
+const String testImages   = 'test_images';
 
 // The main() function is the entry point of the application
 // Run the application with: dart bin/cli.dart <path>
@@ -17,6 +18,7 @@ void main(List<String> args) async {
   parser.addOption(supabasePath, abbr: 's', help: 'Path to images to upload to Supabase');
   parser.addFlag(testSupabase,   abbr: 'u', help: 'Input strings to test Supabase embeddings');
   parser.addOption(supabaseS3,   abbr: 't', help: 'Path to images to upload to Supabase Storage');
+  parser.addFlag(testImages,     abbr: 'g', help: 'Input strings to test image generation');
 
   var inputs = parser.parse(args);
 
@@ -35,6 +37,9 @@ void main(List<String> args) async {
   } else if (inputs[supabaseS3] != null) {
     print('Loading images to Supabase Storage from folder: ${inputs[supabaseS3]}');
     cli.loadSupabaseStorage(inputs[supabaseS3]);
+  } else if (inputs[testImages] == true) {
+    print('Testing Image Generation');
+    cli.runImageTest(false);
   } else {
     print('Utility to load and test images in an embeddings database');
     print(parser.usage);

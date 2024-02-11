@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 import 'package:openaac/pages/splash_page.dart';
 import 'package:openaac/pages/login_page.dart';
@@ -14,10 +16,15 @@ final supabase = Supabase.instance.client;
 void main() async {  
   WidgetsFlutterBinding.ensureInitialized();
 
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   await Supabase.initialize(
     url: supabaseURL,
     anonKey: publicAnonKey,
   );
+
   runApp(OpenAAC());
 }
 

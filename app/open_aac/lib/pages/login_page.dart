@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -56,14 +57,37 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    _authStateSubscription = supabase.auth.onAuthStateChange.listen((data) {
+    _authStateSubscription = supabase.auth.onAuthStateChange.listen((data) async {
       if (_redirecting) return;
       final session = data.session;
+      if (data.event == AuthChangeEvent.signedIn) {
+        await FirebaseMessaging.instance.requestPermission();
+        // Needed for iOS
+        await FirebaseMessaging.instance.getAPNSToken();
+
+        final fcmToken = await FirebaseMessaging.instance.getToken();
+        if (fcmToken != null) {
+          _setFCMToken(fcmToken);
+        }
+      }
       if (session != null) {
         _redirecting = true;
         Navigator.of(context).pushReplacementNamed('/home');
       }
     });
+
+    FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) { 
+      _setFCMToken(fcmToken);
+    });
+
+     FirebaseMessaging.onMessage.listen((payload) {
+      final notification = payload.notification;
+      if (notification != null) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('${notification.title} ${notification.body}')));
+      }
+    });
+
     super.initState();
   }
 
@@ -109,9 +133,19 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _launchSite() async {
-   final Uri url = Uri.parse('https://learningo.org');
+   final Uri url = Uri.parse('https://learningo.org/app');
    if (!await launchUrl(url)) {
         throw Exception('Could not launch $url');
+    }
+  }
+
+  Future<void> _setFCMToken(String fcmToken) async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId != null) {
+      await supabase.from('profiles').upsert({
+        'id': userId,
+        'fcm_token': fcmToken,
+      });
     }
   }
 }

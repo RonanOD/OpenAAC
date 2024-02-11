@@ -12,12 +12,13 @@ const String modelName = 'text-embedding-3-small';
 const String pcIndex   = 'openaac-embeddings';
 const String namespace = 'openaac-images';
 const String imageGenPrompt = '''
-Create a simplified image of "XXXX", created only using primary colors 
-on a white background. The design should be minimalistic with no additional 
-details or text. This image should resemble the stylistic approach of icons 
-utilized in an AAC (Augmentative and Alternative Communication) application.''';
+Create a simplified image that is an icon representing "XXXX".
+Use only primary colors on a white background. The design is 
+minimalist with no additional detail. Do not use any character or typography on the image.
+This image should resemble the stylistic approach of icons utilized in an 
+AAC (Augmentative and Alternative Communication) application.''';
 const double vectorMatchThreshold = 0.92;
-const String imageGenModel = "dall-e-3";
+const String imageGenModel = "dall-e-2"; // "dall-e-3" is the deluxe option
 const String supabaseImagesTable = 's4y_images';
 
 // Config Map
@@ -29,6 +30,30 @@ var config = {
   'supabaseURL':       Platform.environment['SUPABASE_URL'],
   'supabaseAnonKey':   Platform.environment['SUPABASE_ANON_KEY'],
 };
+
+// Run a loop testing the conversion of text to embedding images
+void runImageTest(bool pinecone) async {
+  if (!checkConfig(pinecone)) {
+    return;
+  }
+
+
+  while(true) {
+    print('Enter text to generate an image. Enter to exit. (Remember there is a cost)');
+    final text = stdin.readLineSync();
+    if (text!.isEmpty) {
+      print('No text entered. Exiting.');
+      return;
+    } else {
+      print("text to lookup: $text");
+      // Split the text into a list of words
+      List<String> words = text.split(' ');
+      for (var word in words) {
+        await generateImage(word);
+      }
+    }
+  }
+}
 
 // Run a loop testing the conversion of text to embedding images
 void runTextTest(bool pinecone) async {
@@ -136,13 +161,13 @@ Future<void> processPineconeText(List<String> words, OpenAIEmbeddings openAIEmbe
 }
 
 Future<void> generateImage(String word) async {
-  print("poor match for $word. Attempting image generation.");
+  print("Attempting image generation for $word.");
   String prompt = imageGenPrompt.replaceAll('XXXX', word);
   final image = await OpenAI.instance.image.create(
     prompt: prompt,
     model: imageGenModel,
     n: 1,
-    size: OpenAIImageSize.size1024,
+    size: OpenAIImageSize.size512,
     responseFormat: OpenAIImageResponseFormat.b64Json,
   );
     

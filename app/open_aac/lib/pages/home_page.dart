@@ -19,6 +19,7 @@ class _HomePageState extends State<HomePage> {
   final textController = TextEditingController();
   final tts.AppTts appTts = tts.AppTts();
   List<ai.Mapping> mappings = [];
+  Map<String, Future<List<ai.Mapping>>> _ongoingLookups = {}; // Track in-progress text lookups
 
   @override
   void dispose() {
@@ -39,7 +40,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _checkText(var text, BuildContext context) {
-    ai.lookupSupabase(text).then((mappings) {
+    lookupSupabase(text).then((mappings) {
       this.mappings = mappings;
       setState(() {
         _isLoading = false;
@@ -50,12 +51,32 @@ class _HomePageState extends State<HomePage> {
       });
 
       if (error is FunctionException) {
-        var fex = error as FunctionException;
-        if (fex.reasonPhrase!.toLowerCase().contains('unauthorized')) {
+        if (error.reasonPhrase!.toLowerCase().contains('unauthorized')) {
           _dialogBuilder(context, "User not allowed. Contact your administrator.");
         }
       }
     });
+  }
+
+  // lookupSupabase with In-Progress Call and Caching
+  Future<List<ai.Mapping>> lookupSupabase(String text) async {
+    if (_ongoingLookups.containsKey(text)) {
+      // Lookup already in progress. Wait for existing future  
+      return _ongoingLookups[text]!;  
+    }
+
+    // Cache for subsequent calls 
+    var lookupFuture = Future(() => ai.lookupSupabase(text)); 
+    _ongoingLookups[text] = lookupFuture;
+
+    try {
+      // Store and return the result once completed
+      var result = await lookupFuture;
+      return result; 
+    } finally {
+      // Ensure we remove it from the ongoing lookups map
+      _ongoingLookups.remove(text);
+    }
   }
 
   @override
@@ -165,7 +186,7 @@ class _HomePageState extends State<HomePage> {
                     direction: Axis.horizontal,
                     children: mappings.map((item) {
                       if (item.poorMatch) {
-                        Image overlay = Image.memory(item.generatedImage);
+                        Image overlay = Image.memory(item.imageBytes);
                         Image blank = Image.asset("assets/${ai.blankTilePath}");
                         return InkResponse(
                           onTap: () => _onTileClicked(item.word),
@@ -205,7 +226,7 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             InkResponse(
                               onTap: () => _onTileClicked(item.word),
-                              child: Image.memory(item.generatedImage),
+                              child: Image.memory(item.imageBytes),
                             ),
                           ],
                         );

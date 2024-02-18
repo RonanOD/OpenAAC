@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image/image.dart' as img;
@@ -10,18 +10,16 @@ const String pcIndex   = 'openaac-embeddings';
 const String namespace = 'openaac-images';
 const String blankTilePath = 'images/_app/blank.png';
 const double vectorMatchThreshold = 0.78;
-const String imageCachePrefix = "images/openai/";
+const String genImagesCachePrefix = "images/openai/";
+const String storedImagesCachePrefix = "images/supabase/";
 
 class Mapping {
   final String word;
   final bool poorMatch;
-  Uint8List? _generatedImage;
-  String? imagePath;
+  final String? imagePath;
+  final Uint8List imageBytes;
 
-  Mapping(this.word, this.imagePath, this.poorMatch);
-
-  set generatedImage(Uint8List imageBytes) => _generatedImage = imageBytes;
-  Uint8List get generatedImage => _generatedImage!;
+  Mapping(this.word, this.imagePath, this.poorMatch, this.imageBytes);
 }
 
 // Perform a lookup on the current text using Supabase
@@ -41,27 +39,31 @@ Future<List<Mapping>> lookupSupabase(String text) async {
         continue;
       }
       try {
-        final response = await sbClient.functions.invoke("getImages", body: {'words': word});
-        print("word $word => Status: ${response.status} Initial: ${response.data}");
-        if (response.status == 200) {
-          Mapping mapping;
-          if (response.data.length > 0) {
-            final match = response.data[0];
-            final similarity = match['similarity'].toString();
-            if (double.parse(similarity) < vectorMatchThreshold) {
-              print("poor match for $word. Attempting image generation.");
-              mapping = await _generateImage(word);
+        // Attempt to retrieve the image from either generated or storage images cache
+        Mapping? mapping = await _getFileFromCaches(word); 
+
+        if (mapping == null) {
+          // No cached image; proceed with Supabase query
+          final response = await sbClient.functions.invoke("getImages", body: {'words': word});
+          print("word $word => Status: ${response.status} Initial: ${response.data}");
+          if (response.status == 200) {
+            Mapping mapping;
+            if (response.data.length > 0) {
+              final match = response.data[0];
+              final similarity = match['similarity'].toString();
+              if (double.parse(similarity) < vectorMatchThreshold) {
+                print("poor match for $word. Attempting image generation.");
+                mapping = await _generateImage(sbClient, word);
+              } else {
+                mapping = await _downloadStoredFile(sbClient, match['path'], word);
+              }
             } else {
-              var imagePath = match['path'];
-              print("word $word => $imagePath");
-              final imageBytes = await _getFileFromCacheOrDownload(sbClient, imagePath);  
-              mapping = Mapping(word, imagePath, false);
-              mapping.generatedImage = imageBytes!;
+              print("No match for $word. Attempting image generation.");
+              mapping = await _generateImage(sbClient, word);
             }
-          } else {
-            print("No match for $word. Attempting image generation.");
-            mapping = await _generateImage(word);
+            mappings.add(mapping);
           }
+        } else {
           mappings.add(mapping);
         }
       } on FunctionException catch (err) {
@@ -73,57 +75,87 @@ Future<List<Mapping>> lookupSupabase(String text) async {
   return mappings;
 }
 
-Future<Uint8List?> _getFileFromCacheOrDownload(SupabaseClient client, String imagePath, 
-    {bool generateImage = false, String word = ""}) async {
-  Uint8List? imageBytes;
-  var cacheFile = await DefaultCacheManager().getFileFromCache(imagePath);
-  if (cacheFile == null) {
-    if (generateImage) {
-      final response = await client.functions.invoke("generateImage", body: {'word': word});
-      String b64Json = response.data;
+// Check only for cached files
+Future<Mapping?> _getFileFromCaches(String word) async {
+  // Build the potential image path for generated image
+  final genImagePath = genImagesCachePrefix + word; 
 
-      final base64Decoder = base64.decoder;
-      final decodedBytes = base64Decoder.convert(b64Json);
-      if (decodedBytes.isNotEmpty) {
-        img.Image? rawImage = img.decodeImage(decodedBytes);
-        img.Image resized = img.copyResize(rawImage!, width: 144, height: 144);
-        imageBytes = img.encodePng(resized);
-      } else {
-        return null;
-      }
-    } else {
-      imageBytes = await client.storage.from('images').download(imagePath);
-    }
-    // Put the image file in the cache for the next time.
-    await DefaultCacheManager().putFile(
-      imagePath,
-      imageBytes,
-      fileExtension: "png",
-      eTag: imagePath,
-      key: imagePath,
-      maxAge: Duration(days: 50),
-    );
-  } else {
-    imageBytes = cacheFile.file.readAsBytesSync();
+  var genImageCacheFile = await DefaultCacheManager().getFileFromCache(genImagePath);
+
+  if (genImageCacheFile != null) {
+    // Cache hit! Construct mapping directly
+    return Mapping(word, genImagePath, true, genImageCacheFile.file.readAsBytesSync());
   }
-  return imageBytes;
+
+  // Build the potential image path for a stored image
+  final storedImagePath = storedImagesCachePrefix + word; 
+
+  var storedImageFile = await DefaultCacheManager().getFileFromCache(storedImagePath);
+
+  if (storedImageFile != null) {
+    // Cache hit! Construct mapping directly
+    return Mapping(word, storedImagePath, false, storedImageFile.file.readAsBytesSync());
+  }
+
+  return null;
+}
+
+Future<Mapping> _downloadStoredFile(SupabaseClient client, String remoteImagePath, String word) async {
+  try {
+    Uint8List? imageBytes = await client.storage.from('images').download(remoteImagePath);
+    
+    if (imageBytes.isNotEmpty) {
+      // Put the image file in the cache for the next time.
+      final storedImagePath = storedImagesCachePrefix + word;
+
+      await DefaultCacheManager().putFile(
+        storedImagePath,
+        imageBytes,
+        fileExtension: "png",
+        eTag: "real",
+        key: storedImagePath,
+        maxAge: Duration(days: 50),
+      );
+      return Mapping(word, storedImagePath, false, imageBytes);
+    }
+  } on StorageException catch (err) {
+    // Not found or some other issue, just return a blank tile
+    print("Storage exception: ${err.message}");    
+  }
+  // blank tile
+  return await _getBlankMapping(word);
 }
 
 // Use edge function to generate an image as there isn't a close enough vector match.
 // Cache generated images in local storage to keep costs down
-Future<Mapping> _generateImage(String word) async {
-  Mapping mapping;
-  final imagePath = imageCachePrefix + word;
-  
-  final resizedData = await _getFileFromCacheOrDownload(Supabase.instance.client, imagePath, 
-                                                generateImage: true, word: word);
+Future<Mapping> _generateImage(SupabaseClient sbClient, String word) async {
+  final imagePath = genImagesCachePrefix + word;
+  final response = await sbClient.functions.invoke("generateImage", body: {'word': word});
+  String b64Json = response.data;
+
+  final base64Decoder = base64.decoder;
+  final decodedBytes = base64Decoder.convert(b64Json);
+
+  Uint8List? resizedData;
+  if (decodedBytes.isNotEmpty) {
+    img.Image? rawImage = img.decodeImage(decodedBytes);
+    img.Image resized = img.copyResize(rawImage!, width: 144, height: 144);
+    resizedData = img.encodePng(resized);
+
+    // Cache the generated image 
+    await DefaultCacheManager().putFile(imagePath, resizedData, 
+      fileExtension: "png", eTag: "generated", key: imagePath, maxAge: Duration(days: 50),
+    );
+  } 
 
   if (resizedData != null) {
-    mapping = Mapping(word, null, true);
-    mapping.generatedImage = resizedData;
+    return Mapping(word, null, true, resizedData);
   } else {
-    mapping = Mapping(word, blankTilePath, true);
+    return _getBlankMapping(word);
   }
+}
 
-  return mapping;
+Future<Mapping> _getBlankMapping(String word) async {
+  final blankImageData = await rootBundle.load(blankTilePath);
+  return Mapping(word, blankTilePath, true, blankImageData.buffer.asUint8List());
 }

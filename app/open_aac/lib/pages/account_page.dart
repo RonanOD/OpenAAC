@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:openaac/main.dart';
 import 'package:openaac/components/avatar.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 const String imageCachePrefix = "images/";
 
@@ -16,6 +17,14 @@ class AccountPage extends StatefulWidget {
 class _AccountPageState extends State<AccountPage> {
   final _usernameController = TextEditingController();
   final _websiteController = TextEditingController();
+  PackageInfo _packageInfo = PackageInfo(
+    appName: 'Unknown',
+    packageName: 'Unknown',
+    version: 'Unknown',
+    buildNumber: 'Unknown',
+    buildSignature: 'Unknown',
+    installerStore: 'Unknown',
+  );
 
   String? _avatarUrl;
   var _loading = true;
@@ -23,6 +32,7 @@ class _AccountPageState extends State<AccountPage> {
   @override
   void initState() {
     super.initState();
+    _initPackageInfo();
     _getProfile();
   }
 
@@ -31,6 +41,13 @@ class _AccountPageState extends State<AccountPage> {
     _usernameController.dispose();
     _websiteController.dispose();
     super.dispose();
+  }
+
+  Future<void> _initPackageInfo() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _packageInfo = info;
+    });
   }
 
   /// Called once a user id is received within `onAuthenticated()`
@@ -165,7 +182,7 @@ class _AccountPageState extends State<AccountPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text("Settings for v. ${_packageInfo.version}")),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(

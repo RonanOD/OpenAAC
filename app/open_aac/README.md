@@ -4,6 +4,8 @@ The OpenAAC client is available on Android and iOS.
 
 ## Android Releases
 This section contains notes for each Android release.
+### Beta 0.0.5
+ * Add version number to account page
 ### Beta 0.0.4
  * Improve async calls to Supabase to cut down on redundancy and cacheing
 ### Beta 0.0.3

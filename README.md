@@ -4,6 +4,8 @@ AI can be used to help people communicate!
 
 This project uses [OpenAI Vector embeddings](https://platform.openai.com/docs/guides/embeddings) to translate a user's text/speech into easy to understand [AAC](https://www.asha.org/public/speech/disorders/aac/) symbols. The OpenAAC app uses OpenAI to match symbols to text to convert natural language to AAC pictograms.
 
+Currently in trial at [Learningo](https://learningo.org/)!
+
 **Highlights** 
  * If there isn't a high match from the Vector DB, OpenAAC will use [OpenAI DALL-E 3](https://openai.com/dall-e-3) to generate a symbol's image. This image data is cached in local storage.
  * Tap on icon to hear the associated word using Text-To-Speech engine.

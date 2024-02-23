@@ -53,6 +53,11 @@ class _HomePageState extends State<HomePage> {
       if (error is FunctionException) {
         if (error.reasonPhrase!.toLowerCase().contains('unauthorized')) {
           _dialogBuilder(context, "User not allowed. Contact your administrator.");
+        } else {
+          final msg = "Error: ${error.reasonPhrase}";
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(msg ?? "An unknown error occurred")
+          ));
         }
       }
     });

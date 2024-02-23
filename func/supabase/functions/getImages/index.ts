@@ -47,6 +47,7 @@ Deno.serve(async (req) => {
 
     // Gate only users with learningo emails or explicit access
     if (!(user['email'].endsWith("@learningo.org") || grantedAccess)) {
+      console.log("Unauthorized user: " + JSON.stringify(user))
       return new Response(JSON.stringify({ error: "Not allowed" }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 401,
@@ -76,6 +77,7 @@ Deno.serve(async (req) => {
       })
 
       if (error != null) {
+        console.log("Error matching images: " + JSON.stringify(error))
         return new Response(JSON.stringify(error), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500
@@ -88,6 +90,7 @@ Deno.serve(async (req) => {
           console.log("PATH: " + path)
           signImage(path)
         }*/
+        console.log("Successful processing for " + user['email'])
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200

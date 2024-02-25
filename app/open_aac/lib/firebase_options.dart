@@ -64,6 +64,6 @@ class DefaultFirebaseOptions {
     projectId: 'openaac-411413',
     storageBucket: 'openaac-411413.appspot.com',
     androidClientId: '61771573616-5a2gooulsqpo5c6rt20m36anar605sb2.apps.googleusercontent.com',
-    iosBundleId: 'com.example.openAac',
+    iosBundleId: 'org.learningo.openaac',
   );
 }

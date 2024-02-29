@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:openaac/main.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -61,14 +62,20 @@ class _LoginPageState extends State<LoginPage> {
       if (_redirecting) return;
       final session = data.session;
       if (data.event == AuthChangeEvent.signedIn) {
-        await FirebaseMessaging.instance.requestPermission();
-        // Needed for iOS
-        await FirebaseMessaging.instance.getAPNSToken();
 
-        final fcmToken = await FirebaseMessaging.instance.getToken();
-        if (fcmToken != null) {
-          _setFCMToken(fcmToken);
-        }
+        await FirebaseMessaging.instance.requestPermission();
+        // Handle potential getAPNSToken() error
+        try { 
+          await FirebaseMessaging.instance.getAPNSToken(); 
+
+          final fcmToken = await FirebaseMessaging.instance.getToken();
+          if (fcmToken != null) {
+            _setFCMToken(fcmToken);
+          }
+        } on PlatformException catch (e) {
+          // Handle the error (e.g., log, display message)
+          print('Error getting APNS token: $e');
+        }  
       }
       if (session != null) {
         _redirecting = true;
@@ -80,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
       _setFCMToken(fcmToken);
     });
 
-     FirebaseMessaging.onMessage.listen((payload) {
+    FirebaseMessaging.onMessage.listen((payload) {
       final notification = payload.notification;
       if (notification != null) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

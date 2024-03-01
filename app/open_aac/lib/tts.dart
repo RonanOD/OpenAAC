@@ -118,6 +118,19 @@ class AppTts extends ChangeNotifier {
   }
 
   Future _setAwaitOptions() async {
+    if (isIOS) {
+      await flutterTts.setSharedInstance(true);
+      await flutterTts.setIosAudioCategory(IosTextToSpeechAudioCategory.playback,
+          [
+            IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+            IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+            IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+            IosTextToSpeechAudioCategoryOptions.defaultToSpeaker
+          ],
+          IosTextToSpeechAudioMode.defaultMode
+      );
+    }
+
     await flutterTts.awaitSpeakCompletion(true);
   }
 

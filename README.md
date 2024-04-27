@@ -89,6 +89,7 @@ Beginning with the Flutter client app, the details of the flow are as follows:
  * ~~A local cache of words to images to cut down on API calls~~
  * ~~Use a Large Language Model (Dalle-3) to generate symbols when there are low confidence matches in the vector DB.~~
  * ~~Full Supabase integration~~
+ * Use Supabase Edge Function AI to generate embeddings. See [here](https://supabase.com/docs/guides/ai/quickstarts/generate-text-embeddings)
  * Make freely available on the Google Play Store and Apple App Store
  * Better integration with other AAC symbol sets
  * Allow users to upload their own custom symbols

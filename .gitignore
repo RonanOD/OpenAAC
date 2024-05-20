@@ -31,3 +31,4 @@ flutter/
 helloworld/
 db/cli/images/
 .DS_Store
+.vscode/

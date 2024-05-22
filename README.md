@@ -16,9 +16,10 @@ The goal is to assist in communication between neurotypical and nonneurotypical 
 [![Open AAC Demo](https://img.youtube.com/vi/prk7yOf5zJI/0.jpg)](https://youtu.be/prk7yOf5zJI)
 
 # App Images
-<img src="docs/lets_speak.jpg" width="30%"></img>
-<img src="docs/generated_image.jpg" width="30%"></img>
-<img src="docs/settings.jpg" width="30%"></img>
+<img src="docs/iphoneLogin.png" width="25%"></img>
+<img src="docs/iphoneHome.png" width="25%"></img>
+<img src="docs/generated_image.png" width="25%"></img>
+<img src="docs/iphonesettings.png" width="25%"></img>
 
 # Background
 My name is [Ronan O'Driscoll](https://ronanodriscoll.com/). I am a software developer with an autistic son. Through therapy and assisted communication tools, his ability to communicate has improved considerably from when he was largely non-verbal. 

@@ -54,7 +54,8 @@ Beginning with the Flutter client app, the details of the flow are as follows:
 
 ## Technology Stack
  * [Flutter](https://flutter.dev/): Cross platform mobile app framework
- * [Supabase](https://supabase.com/): Open source cloud provider
+ * [Supabase](https://supabase.com/): Cloud provider of Postgres database and Serverless Edge functions
+ * [Upstash Redis](https://upstash.com/): Cloud provider of Redis cache 
  * [Postgres](https://www.postgresql.org/): Open source database (with [pgvector](https://github.com/pgvector/pgvector/) support)
  * [Pinecone](https://pub.dev/packages/pinecone): Pinecone vector database (deprecated)
  * [Langchain](https://pub.dev/packages/langchain): LangChain provides a set of ready-to-use components for working with language models and the concept of chains, which allows to "chain" components together to formulate more advanced use cases around LLMs.

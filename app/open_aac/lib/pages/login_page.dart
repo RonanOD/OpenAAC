@@ -56,6 +56,28 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+
+  Future<void> _signInAnon() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+        _redirecting = true;
+        Navigator.of(context).pushReplacementNamed('/home');
+    } catch (error) {
+      SnackBar(
+        content: const Text('Unexpected error occurred'),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     _authStateSubscription = supabase.auth.onAuthStateChange.listen((data) async {
@@ -109,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Login to Learningo"),
+        title: const Text("Login to Learningo (Optional)"),
         leading: Builder(
           builder: (BuildContext context) {
             return IconButton(
@@ -133,6 +155,13 @@ class _LoginPageState extends State<LoginPage> {
           ElevatedButton(
             onPressed: _isLoading ? null : _signIn,
             child: Text(_isLoading ? 'Loading' : 'Send Magic Link'),
+          ),
+          const SizedBox(height: 18),
+          const Text('Use without providing email'),
+          const SizedBox(height: 18),
+          ElevatedButton(
+            onPressed: _isLoading ? null : _signInAnon,
+            child: Text(_isLoading ? 'Loading' : 'Sign in Anonymously'),
           ),
         ],
       ),

@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:openaac/pages/splash_page.dart';
 import 'package:openaac/pages/login_page.dart';
 import 'package:openaac/pages/home_page.dart';
 
-const publicAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwY3hleGhydWRrdHlya2tla25lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDU4NDEwODgsImV4cCI6MjAyMTQxNzA4OH0.zr7v1hbvkSBfz7wLTVU7J2g3NUAwAmLgHNuNdG7jULw';
-const supabaseURL   = 'https://bpcxexhrudktyrkkekne.supabase.co';
+
 const appTitle      = 'Learningo Open AAC';
 
 final supabase = Supabase.instance.client;
 
-void main() async {  
+void main() async {
+  await dotenv.load(fileName: ".env"); 
+
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
@@ -21,8 +23,8 @@ void main() async {
   );
 
   await Supabase.initialize(
-    url: supabaseURL,
-    anonKey: publicAnonKey,
+    url: dotenv.get('SUPABASE_URL'),
+    anonKey: dotenv.get('ANON_KEY'),
   );
 
   runApp(OpenAAC());

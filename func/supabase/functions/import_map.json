@@ -14,7 +14,8 @@
       "postgres": "https://deno.land/x/postgres@v0.17.0/mod.ts",
       "puppeteer": "https://deno.land/x/puppeteer@16.2.0/mod.ts",
       "React": "https://esm.sh/react@18.2.0?deno-std=0.177.0",
-      "upstash_redis": "https://deno.land/x/upstash_redis@v1.19.3/mod.ts",
+      "@upstash_redis": "https://deno.land/x/upstash_redis@v1.19.3/mod.ts",
+      "@upstash/ratelimit": "https://cdn.skypack.dev/@upstash/ratelimit@latest",
       "xhr_polyfill": "https://deno.land/x/xhr@0.3.0/mod.ts",
       "kysely": "https://esm.sh/kysely@0.23.4"
     }

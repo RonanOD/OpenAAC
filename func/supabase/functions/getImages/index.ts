@@ -2,7 +2,10 @@
 
 import OpenAI from 'https://deno.land/x/openai@v4.24.0/mod.ts'
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+import { Redis } from 'https://deno.land/x/upstash_redis@v1.19.3/mod.ts'
+import { Ratelimit } from '@upstash/ratelimit'
 
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -41,16 +44,19 @@ Deno.serve(async (req) => {
     if (error) throw error
 
     var grantedAccess = false
-    if (user['user_metadata'] != null && user['user_metadata']['can_access'] != null) {
+    if (user != null && user['user_metadata'] != null && user['user_metadata']['can_access'] != null) {
       grantedAccess = user['user_metadata']['can_access']
     }
 
-    // Gate only users with learningo emails or explicit access
-    if (!(user['email'].endsWith("@learningo.org") || grantedAccess)) {
-      console.log("Unauthorized user: " + JSON.stringify(user))
-      return new Response(JSON.stringify({ error: "Not allowed" }), {
+    // Rate limit users without learningo emails or explicit access
+    if (!user?.email.endsWith("@learningo.org") && !grantedAccess) {
+      console.log("Anonymous user")
+      
+      const data = []
+
+      return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 401,
+        status: 200
       })
     }
 
@@ -90,7 +96,7 @@ Deno.serve(async (req) => {
           console.log("PATH: " + path)
           signImage(path)
         }*/
-        console.log("Successful processing for " + user['email'])
+        console.log("Successful processing")
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200
@@ -107,22 +113,3 @@ Deno.serve(async (req) => {
     })
   }
 })
-/*
-function signImage(path) {
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    {auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    }
-  );
-
-  const { data, error } = supabase.storage
-  .from('images')
-  .createSignedUrl(path, 3600)
-
-  console.log("XXX data: " + JSON.stringify(data) + " err " + JSON.stringify(error))
-}
-*/

@@ -71,7 +71,7 @@ ALTER TABLE "public"."s4y_images_id_seq" OWNER TO "postgres";
 ALTER SEQUENCE "public"."s4y_images_id_seq" OWNED BY "public"."s4y_images"."id";
 
 CREATE TABLE IF NOT EXISTS "supabase_migrations"."schema_migrations" (
-    "version" text NOT NULL,
+    "version" text NOT NULL PRIMARY KEY,
     "statements" text[],
     "name" text
 );
@@ -83,8 +83,8 @@ ALTER TABLE ONLY "public"."s4y_images" ALTER COLUMN "id" SET DEFAULT nextval('pu
 ALTER TABLE ONLY "public"."s4y_images"
     ADD CONSTRAINT "s4y_images_pkey" PRIMARY KEY ("id");
 
-ALTER TABLE ONLY "supabase_migrations"."schema_migrations"
-    ADD CONSTRAINT "schema_migrations_pkey" PRIMARY KEY ("version");
+--ALTER TABLE ONLY "supabase_migrations"."schema_migrations"
+--    ADD CONSTRAINT "schema_migrations_pkey" PRIMARY KEY ("version");
 
 GRANT USAGE ON SCHEMA "public" TO "postgres";
 GRANT USAGE ON SCHEMA "public" TO "anon";

@@ -52,6 +52,10 @@ class _AccountPageState extends State<AccountPage> {
 
   /// Called once a user id is received within `onAuthenticated()`
   Future<void> _getProfile() async {
+    if (supabase.auth.currentUser == null) { // Assume anonymous user
+      return;
+    }
+
     setState(() {
       _loading = true;
     });
@@ -154,6 +158,44 @@ class _AccountPageState extends State<AccountPage> {
     }
   }
 
+
+  Future<void> _removeProfile() async {
+    bool? deleteProfile = await _dialogBuilder(context, "Are you sure you want to remove your profile? This action cannot be undone.");
+    if (deleteProfile == null || !deleteProfile) {
+      return;
+    }
+    setState(() {
+      _loading = true;
+    });
+    final user = supabase.auth.currentUser;
+    try {
+      await supabase.from('profiles').delete().eq('id', user!.id);
+      await supabase.auth.signOut();
+      if (mounted) {
+        const SnackBar(
+          content: Text('Successfully removed profile!'),
+        );
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
+    } on PostgrestException catch (error) {
+      SnackBar(
+        content: Text(error.message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      );
+    } catch (error) {
+      SnackBar(
+        content: const Text('Unexpected error occurred'),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
+  }
+
   Future<void> _signOut() async {
     try {
       await supabase.auth.signOut();
@@ -174,6 +216,37 @@ class _AccountPageState extends State<AccountPage> {
     }
   }
 
+  Future<bool?> _dialogBuilder(BuildContext context, String msg) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Warning'),
+          content: Text(msg),
+          actions: <Widget>[
+          TextButton(
+            style: TextButton.styleFrom(
+              textStyle: Theme.of(context).textTheme.labelLarge,
+            ),
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              textStyle: Theme.of(context).textTheme.labelLarge,
+            ),
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+          ),
+        ],
+        );
+      },
+    );
+  }
 
   _clearImagesCache() async {
     DefaultCacheManager().emptyCache();
@@ -181,7 +254,34 @@ class _AccountPageState extends State<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    if (supabase.auth.currentUser == null) { // Assume anonymous user
+      return Scaffold(
+        appBar: AppBar(title: Text("Settings for v. ${_packageInfo.version}")),
+        body: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+              children: [
+                const SizedBox(height: 18),
+                SizedBox(
+                  child: Text('Images Cache',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  )
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    _clearImagesCache();
+                  },
+                  child: Text('Clear Cache'),
+                ),
+              ],
+            ),
+    );
+    }
+
+    return Scaffold( // Logged in user settings
       appBar: AppBar(title: Text("Settings for v. ${_packageInfo.version}")),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -208,6 +308,12 @@ class _AccountPageState extends State<AccountPage> {
                 ),
                 const SizedBox(height: 18),
                 TextButton(onPressed: _signOut, child: const Text('Sign Out')),
+                const SizedBox(height: 18),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+                  onPressed: _loading ? null : _removeProfile,
+                  child: Text(_loading ? 'Saving...' : 'Remove Profile'),
+                ),
                 const SizedBox(height: 20),
                 SizedBox(
                   child: Text('Images Cache',

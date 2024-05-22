@@ -49,13 +49,6 @@ class AppTts extends ChangeNotifier {
       notifyListeners();
     });
 
-    if (isAndroid) {
-      flutterTts.setInitHandler(() {
-        print("TTS Initialized");
-        notifyListeners();
-      });
-    }
-
     flutterTts.setCompletionHandler(() {
       print("Complete");
       ttsState = TtsState.stopped;

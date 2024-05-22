@@ -2,7 +2,10 @@
 
 import OpenAI from 'https://deno.land/x/openai@v4.24.0/mod.ts'
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { Redis } from 'https://deno.land/x/upstash_redis@v1.19.3/mod.ts'
+import { Ratelimit } from '@upstash/ratelimit'
+
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,16 +45,34 @@ Deno.serve(async (req) => {
     if (error) throw error
 
     var grantedAccess = false
-    if (user['user_metadata'] != null && user['user_metadata']['can_access'] != null) {
+    if (user != null && user['user_metadata'] != null && user['user_metadata']['can_access'] != null) {
       grantedAccess = user['user_metadata']['can_access']
     }
 
-    // Gate only users with learningo emails or explicit access
-    if (!(user['email'].endsWith("@learningo.org") || grantedAccess)) {
-      return new Response(JSON.stringify({ error: "Not allowed" }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 401,
+    // Rate limit users without learningo emails or explicit access
+    if (!user?.email.endsWith("@learningo.org") && !grantedAccess) {
+      console.log("Anonymous user")
+      const redis = new Redis({
+        url: Deno.env.get('UPSTASH_REDIS_REST_URL')!,
+        token: Deno.env.get('UPSTASH_REDIS_REST_TOKEN')!,
       })
+  
+      // Create a new ratelimiter, that allows 10 requests per 10 seconds
+      const ratelimit = new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(10, '10 s'), // TODO: Change for production
+        analytics: true,
+      })
+
+      const anon_access = 'anon_access_gen_img'
+      const { success } = await ratelimit.limit(anon_access)
+  
+      if (!success) {
+        return new Response(JSON.stringify({ error: "Rate limited" }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 429,
+        })
+      }
     }
 
     // OpenAI recommends replacing newlines with spaces for best results

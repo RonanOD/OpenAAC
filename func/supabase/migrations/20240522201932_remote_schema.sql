@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION public.delete_storage_object(bucket text, object text
  SECURITY DEFINER
 AS $function$declare
   project_url text := 'https://bpcxexhrudktyrkkekne.supabase.co';
-  service_role_key text := 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwY3hleGhydWRrdHlya2tla25lIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcwNTg0MTA4OCwiZXhwIjoyMDIxNDE3MDg4fQ.WUBxcVhTTCtxyb1fKObI6OilW2BW3ixi1q6mXanEU5c'; --  full access needed
+  service_role_key text := 'update-as-needed'; --  full access needed
   url text := project_url||'/storage/v1/object/'||bucket||'/'||object;
 begin
   select

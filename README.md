@@ -19,7 +19,7 @@ The goal is to assist in communication between neurotypical and nonneurotypical 
 <img src="docs/iphoneLogin.png" width="25%"></img>
 <img src="docs/iphoneHome.png" width="25%"></img>
 <img src="docs/generated_image.png" width="25%"></img>
-<img src="docs/iphonesettings.png" width="25%"></img>
+<img src="docs/iphoneSettings.png" width="25%"></img>
 
 # Background
 My name is [Ronan O'Driscoll](https://ronanodriscoll.com/). I am a software developer with an autistic son. Through therapy and assisted communication tools, his ability to communicate has improved considerably from when he was largely non-verbal. 

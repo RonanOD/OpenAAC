@@ -48,15 +48,15 @@ Deno.serve(async (req) => {
       grantedAccess = user['user_metadata']['can_access']
     }
 
-    // Rate limit users without learningo emails or explicit access
+    // Limit users without learningo emails or explicit access
     if (!user?.email.endsWith("@learningo.org") && !grantedAccess) {
       console.log("Anonymous user")
       
       const data = []
 
-      return new Response(JSON.stringify(data), {
+      return new Response(JSON.stringify({ error: "Not allowed" }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
+        status: 401,
       })
     }
 

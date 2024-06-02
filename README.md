@@ -1,5 +1,7 @@
 # Open Augmentative and Alternative Communication App
 
+<a href="https://apps.apple.com/us/app/open-aac/id6478510426?itsct=apps_box_badge&amp;itscg=30200" style="display: inline-block; overflow: hidden; border-radius: 13px; width: 250px; height: 83px;"><img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/white/en-us?size=250x83&amp;releaseDate=1717200000" alt="Download on the App Store" style="border-radius: 13px; width: 250px; height: 83px;"></a>
+
 AI can be used to help people communicate!
 
 This project uses [OpenAI Vector embeddings](https://platform.openai.com/docs/guides/embeddings) to translate a user's text/speech into easy to understand [AAC](https://www.asha.org/public/speech/disorders/aac/) symbols. The OpenAAC app uses OpenAI to match symbols to text to convert natural language to AAC pictograms.
@@ -93,7 +95,7 @@ Beginning with the Flutter client app, the details of the flow are as follows:
  * ~~Full Supabase integration~~
  * [Autocomplete of previously entered sentences](https://www.dhiwise.com/post/flutter-textfield-autocomplete-for-efficient-user-data-entry)
  * Use Supabase Edge Function AI to generate embeddings. See [here](https://supabase.com/docs/guides/ai/quickstarts/generate-text-embeddings)
- * Make freely available on the Google Play Store and Apple App Store
+ * Make freely available on the Google Play Store and ~~Apple App Store~~
  * Better integration with other AAC symbol sets
  * Allow users to upload their own custom symbols
  * Offline mode, so that the app can be used without an internet connection and/or database. Requires local vector database.

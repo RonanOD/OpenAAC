@@ -52,7 +52,11 @@ Deno.serve(async (req) => {
     // Rate limit users without learningo emails or explicit access
     if (!user?.email.endsWith("@learningo.org") && !grantedAccess) {
       console.log("Anonymous user")
-      const redis = new Redis({
+      return new Response(JSON.stringify({ error: "Not allowed" }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      })
+      /*const redis = new Redis({
         url: Deno.env.get('UPSTASH_REDIS_REST_URL')!,
         token: Deno.env.get('UPSTASH_REDIS_REST_TOKEN')!,
       })
@@ -73,6 +77,7 @@ Deno.serve(async (req) => {
           status: 429,
         })
       }
+      */
     }
 
     // OpenAI recommends replacing newlines with spaces for best results

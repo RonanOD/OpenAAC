@@ -51,7 +51,7 @@ Beginning with the Flutter client app, the details of the flow are as follows:
  1. An authenticated user calls an Edge function to return Images for each word.
  1. The Edge function converts each word to an embedding using the OpenAI embedding service.
  1. The Edge function takes the embedding vector and call a Postgres function.
- 1. This function runs a cosine similiarity match against the Images table.
+ 1. This function runs a cosine similarity match against the Images table.
     * A separate edge function calls [OpenAI DALL-E 3](https://openai.com/dall-e-3) generation when there isn't a good match for the word.
  1. The app will call Supabase Storage for the images which can be cached locally
 
